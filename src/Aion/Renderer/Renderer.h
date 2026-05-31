@@ -1,5 +1,8 @@
 #pragma once
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 class Renderer
 {
 public:
@@ -7,6 +10,5 @@ public:
     void Draw();
     void Shutdown();
 
-private:
-    unsigned int VAO, VBO;
+    void Update(float deltaTime, GLFWwindow* window);
 };

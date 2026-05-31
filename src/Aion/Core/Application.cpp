@@ -1,7 +1,9 @@
 #include "Application.h"
+
+#include <iostream>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
 
 #include "Aion/Renderer/Renderer.h"
 
@@ -38,12 +40,19 @@ void Application::Run()
 {
     Renderer renderer;
     renderer.Init();
+    float lastTime = (float)glfwGetTime();
 
     while (!glfwWindowShouldClose(m_Window))
     {
         // Input
         if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(m_Window, true);
+
+        float currentTime = (float)glfwGetTime();
+        float deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        renderer.Update(deltaTime, m_Window);
 
         renderer.Draw();
 

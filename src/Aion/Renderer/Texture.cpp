@@ -5,20 +5,90 @@
 #include <glad/glad.h>
 #include <stb/stb_image.h>
 
-Texture::Texture( unsigned char* data, int width, int height, int channels)
+Texture::Texture(
+    const std::string& path)
 {
-    glGenTextures(1, &m_TextureID);
+    stbi_set_flip_vertically_on_load(true);
 
-    glBindTexture(GL_TEXTURE_2D, m_TextureID);
+    int width;
+    int height;
+    int channels;
+
+    unsigned char* data =
+        stbi_load(
+            path.c_str(),
+            &width,
+            &height,
+            &channels,
+            0
+        );
+
+    if (!data)
+    {
+        std::cout
+            << "Failed to load texture: "
+            << path
+            << std::endl;
+
+        return;
+    }
+
+    CreateTexture(
+        data,
+        width,
+        height,
+        channels
+    );
+
+    stbi_image_free(data);
+}
+
+Texture::Texture(
+    unsigned char* data,
+    int width,
+    int height,
+    int channels)
+{
+    CreateTexture(
+        data,
+        width,
+        height,
+        channels
+    );
+}
+
+void Texture::CreateTexture(
+    unsigned char* data,
+    int width,
+    int height,
+    int channels)
+{
+    glGenTextures(
+        1,
+        &m_textureID
+    );
+
+    glBindTexture(
+        GL_TEXTURE_2D,
+        m_textureID
+    );
 
     GLenum format = GL_RGB;
 
-    if (channels == 1)
+    switch (channels)
+    {
+    case 1:
         format = GL_RED;
-    else if (channels == 3)
+        break;
+
+    case 3:
         format = GL_RGB;
-    else if (channels == 4)
+        break;
+
+    case 4:
         format = GL_RGBA;
+        break;
+    }
 
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -32,7 +102,9 @@ Texture::Texture( unsigned char* data, int width, int height, int channels)
         data
     );
 
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(
+        GL_TEXTURE_2D
+    );
 
     glTexParameteri(
         GL_TEXTURE_2D,
@@ -61,11 +133,26 @@ Texture::Texture( unsigned char* data, int width, int height, int channels)
 
 Texture::~Texture()
 {
-    glDeleteTextures(1, &m_TextureID);
+    glDeleteTextures(
+        1,
+        &m_textureID
+    );
 }
 
-void Texture::Bind(unsigned int slot) const
+void Texture::Bind(
+    unsigned int slot) const
 {
-    glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, m_TextureID);
+    glActiveTexture(
+        GL_TEXTURE0 + slot
+    );
+
+    glBindTexture(
+        GL_TEXTURE_2D,
+        m_textureID
+    );
+}
+
+unsigned int Texture::GetID() const
+{
+    return m_textureID;
 }

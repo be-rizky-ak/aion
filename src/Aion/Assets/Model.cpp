@@ -81,7 +81,7 @@ Model::Model(const std::string& path)
 
     if (!loadedTextures.empty())
     {
-        m_BaseColorTexture = loadedTextures[0];
+        m_baseColorTexture = loadedTextures[0];
     }
 
     for (const tinygltf::Mesh& mesh : gltfModel.meshes)
@@ -222,32 +222,32 @@ Model::Model(const std::string& path)
 
             Mesh* newMesh = new Mesh(vertices, indices);
 
-            m_Meshes.push_back(newMesh);
+            m_meshes.push_back(newMesh);
         }
     }
 }
 
 void Model::Draw()
 {
-    for (size_t i = 0; i < m_Meshes.size(); i++)
+    for (size_t i = 0; i < m_meshes.size(); i++)
     {
-        if (i < m_Materials.size())
+        if (i < m_materials.size())
         {
-            m_Materials[i]->Bind();
+            m_materials[i]->Bind();
         }
 
-        m_Meshes[i]->Draw();
+        m_meshes[i]->Draw();
     }
 }
 
 Model::~Model()
 {
-    for (Mesh* mesh : m_Meshes)
+    for (Mesh* mesh : m_meshes)
     {
         delete mesh;
     }
 
-    for (Material* material : m_Materials)
+    for (Material* material : m_materials)
     {
         delete material;
     }

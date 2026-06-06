@@ -16,11 +16,11 @@ public:
 
     void Draw();
 
-    Texture* GetTexture() const { return m_BaseColorTexture; }
+    Texture* GetTexture() const { return m_baseColorTexture; }
 
 private:
-    std::vector<Mesh*> m_Meshes;
-    std::vector<Material*> m_Materials;
+    std::vector<Mesh*> m_meshes;
+    std::vector<Material*> m_materials;
     
-    Texture* m_BaseColorTexture = nullptr;
+    Texture* m_baseColorTexture = nullptr;
 };

@@ -6,7 +6,7 @@
 #include "Texture.h"
 
 Material::Material(Shader* shader)
-    : m_Shader(shader)
+    : m_shader(shader)
     , Color(1.0f, 1.0f, 1.0f)
     , DiffuseTexture(nullptr)
 {
@@ -14,9 +14,9 @@ Material::Material(Shader* shader)
 
 void Material::Bind()
 {
-    m_Shader->Use();
+    m_shader->Use();
 
-    m_Shader->SetVec3("u_Color", Color);
+    m_shader->SetVec3("u_Color", Color);
 
     if (DiffuseTexture)
     {
@@ -24,7 +24,7 @@ void Material::Bind()
 
         unsigned int location =
             glGetUniformLocation(
-                m_Shader->GetID(),
+                m_shader->GetID(),
                 "u_Texture"
             );
 
@@ -34,5 +34,5 @@ void Material::Bind()
 
 Shader* Material::GetShader() const
 {
-    return m_Shader;
+    return m_shader;
 }

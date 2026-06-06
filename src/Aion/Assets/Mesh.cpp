@@ -4,7 +4,7 @@
 
 Mesh::Mesh( const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
 {
-    m_IndexCount = (unsigned int)indices.size();
+    m_indexCount = (unsigned int)indices.size();
 
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);
@@ -79,7 +79,7 @@ void Mesh::Draw() const
 
     glDrawElements(
         GL_TRIANGLES,
-        m_IndexCount,
+        m_indexCount,
         GL_UNSIGNED_INT,
         nullptr
     );

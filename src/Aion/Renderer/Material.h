@@ -21,5 +21,5 @@ public:
     Texture* DiffuseTexture;
 
 private:
-    Shader* m_Shader;
+    Shader* m_shader;
 };

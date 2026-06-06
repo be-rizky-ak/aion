@@ -27,5 +27,5 @@ private:
     unsigned int m_VBO;
     unsigned int m_EBO;
 
-    unsigned int m_IndexCount;
+    unsigned int m_indexCount;
 };

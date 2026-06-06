@@ -1,14 +1,23 @@
 #pragma once
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+class Scene;
+class Camera;
+class Shader;
 
 class Renderer
 {
 public:
-    void Init();
-    void Draw();
-    void Shutdown();
 
-    void Update(float deltaTime, GLFWwindow* window);
+    Renderer();
+    ~Renderer();
+
+    void Init();
+
+    void Render(
+        Scene* scene,
+        Camera* camera,
+        Shader* shader
+    );
+
+    void Shutdown();
 };

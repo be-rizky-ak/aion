@@ -5,11 +5,38 @@
 class Texture
 {
 public:
-    Texture(unsigned char* data, int width, int height, int channels);
+
+    // Load from file
+    Texture(
+        const std::string& path
+    );
+
+    // Load from memory
+    Texture(
+        unsigned char* data,
+        int width,
+        int height,
+        int channels
+    );
+
     ~Texture();
 
-    void Bind(unsigned int slot = 0) const;
+    void Bind(
+        unsigned int slot = 0
+    ) const;
+
+    unsigned int GetID() const;
 
 private:
-    unsigned int m_TextureID;
+
+    void CreateTexture(
+        unsigned char* data,
+        int width,
+        int height,
+        int channels
+    );
+
+private:
+
+    unsigned int m_textureID;
 };

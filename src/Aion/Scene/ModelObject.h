@@ -6,13 +6,11 @@ class Model;
 
 class ModelObject : public Object3D
 {
-public:
-
+  public:
     ModelObject(Model* model);
 
     Model* GetModel() const;
 
-private:
-
+  private:
     Model* m_model;
 };

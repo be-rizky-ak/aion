@@ -6,8 +6,7 @@ class Mesh;
 
 class MeshFactory
 {
-public:
-
+  public:
     static Mesh* CreateCube();
 
     static Mesh* CreatePlane();

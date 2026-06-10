@@ -1,26 +1,33 @@
 #pragma once
 
-#include <vector>
 #include <string>
-
-#include "../Renderer/Texture.h"
+#include <vector>
 
 class Mesh;
 class Material;
+class Texture;
+
+struct ModelPrimitive
+{
+    Mesh* Mesh;
+    Material* Material;
+
+    int NodeIndex;
+};
 
 class Model
 {
-public:
+  public:
     Model(const std::string& path);
+
     ~Model();
 
-    void Draw();
+    const std::vector<Texture*>& GetTextures() const;
 
-    Texture* GetTexture() const { return m_baseColorTexture; }
+    const std::vector<ModelPrimitive>& GetPrimitives() const;
 
-private:
-    std::vector<Mesh*> m_meshes;
+  private:
+    std::vector<ModelPrimitive> m_primitives;
+    std::vector<Texture*> m_textures;
     std::vector<Material*> m_materials;
-    
-    Texture* m_baseColorTexture = nullptr;
 };

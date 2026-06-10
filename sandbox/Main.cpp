@@ -1,9 +1,8 @@
-#include "Application.h"
+#include "SandboxApplication.h"
 
 int main()
 {
-    Application app;
-
+    SandboxApplication app;
     app.Run();
 
     return 0;

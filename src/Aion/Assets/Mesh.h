@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <glm/glm.hpp>
+#include <vector>
 
 struct Vertex
 {
@@ -12,17 +12,14 @@ struct Vertex
 
 class Mesh
 {
-public:
-    Mesh(
-        const std::vector<Vertex>& vertices,
-        const std::vector<uint32_t>& indices
-    );
+  public:
+    Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 
     ~Mesh();
 
     void Draw() const;
 
-private:
+  private:
     unsigned int m_VAO;
     unsigned int m_VBO;
     unsigned int m_EBO;

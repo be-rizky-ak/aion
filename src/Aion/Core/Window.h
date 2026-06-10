@@ -1,30 +1,29 @@
 #pragma once
 
+#include <functional>
 #include <string>
 
 struct GLFWwindow;
+class Event;
 
 class Window
 {
-public:
+  public:
+    using EventCallbackFn = std::function<void(Event&)>;
 
-    Window(
-        int width,
-        int height,
-        const std::string& title
-    );
-
+    Window(int width, int height, const std::string& title);
     ~Window();
 
     bool ShouldClose() const;
-
     void SwapBuffers();
-
     void PollEvents();
 
     GLFWwindow* GetNativeWindow() const;
 
-private:
+    void SetEventCallback(const EventCallbackFn& callback);
+    void SetVSync(bool enabled);
 
+  private:
     GLFWwindow* m_window;
+    EventCallbackFn m_eventCallback;
 };

@@ -4,39 +4,22 @@
 
 class Texture
 {
-public:
-
+  public:
     // Load from file
-    Texture(
-        const std::string& path
-    );
+    Texture(const std::string& path);
 
     // Load from memory
-    Texture(
-        unsigned char* data,
-        int width,
-        int height,
-        int channels
-    );
+    Texture(unsigned char* data, int width, int height, int channels);
 
     ~Texture();
 
-    void Bind(
-        unsigned int slot = 0
-    ) const;
+    void Bind(unsigned int slot = 0) const;
 
     unsigned int GetID() const;
 
-private:
+  private:
+    void CreateTexture(unsigned char* data, int width, int height, int channels);
 
-    void CreateTexture(
-        unsigned char* data,
-        int width,
-        int height,
-        int channels
-    );
-
-private:
-
+  private:
     unsigned int m_textureID;
 };

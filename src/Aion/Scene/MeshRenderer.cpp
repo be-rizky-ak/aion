@@ -1,21 +1,15 @@
 #include "MeshRenderer.h"
 
-MeshRenderer::MeshRenderer(
-    Mesh* mesh,
-    Material* material
-)
-    :
-    m_Mesh(mesh),
-    m_Material(material)
+MeshRenderer::MeshRenderer(Mesh* mesh, Material* material) : m_mesh(mesh), m_material(material)
 {
 }
 
 Mesh* MeshRenderer::GetMesh() const
 {
-    return m_Mesh;
+    return m_mesh;
 }
 
 Material* MeshRenderer::GetMaterial() const
 {
-    return m_Material;
+    return m_material;
 }

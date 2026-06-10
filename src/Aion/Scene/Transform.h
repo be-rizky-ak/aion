@@ -4,12 +4,12 @@
 
 class Transform
 {
-public:
+  public:
     Transform();
 
     glm::mat4 GetMatrix() const;
 
-public:
+  public:
     glm::vec3 Position;
     glm::vec3 Rotation;
     glm::vec3 Scale;

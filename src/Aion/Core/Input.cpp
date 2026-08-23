@@ -2,82 +2,85 @@
 
 #include <GLFW/glfw3.h>
 
-GLFWwindow* Input::s_window = nullptr;
-
-float Input::s_mouseX = 0.0f;
-float Input::s_mouseY = 0.0f;
-
-float Input::s_lastMouseX = 0.0f;
-float Input::s_lastMouseY = 0.0f;
-
-float Input::s_mouseDeltaX = 0.0f;
-float Input::s_mouseDeltaY = 0.0f;
-
-void Input::Initialize(GLFWwindow* window)
+namespace Aion
 {
-    s_window = window;
-}
+    GLFWwindow* Input::s_window = nullptr;
 
-bool Input::GetKey(int key)
-{
-    if (!s_window)
+    float Input::s_mouseX = 0.0f;
+    float Input::s_mouseY = 0.0f;
+
+    float Input::s_lastMouseX = 0.0f;
+    float Input::s_lastMouseY = 0.0f;
+
+    float Input::s_mouseDeltaX = 0.0f;
+    float Input::s_mouseDeltaY = 0.0f;
+
+    void Input::Initialize(GLFWwindow* window)
     {
-        return false;
+        s_window = window;
     }
 
-    return glfwGetKey(s_window, key) == GLFW_PRESS;
-}
-
-bool Input::GetMouseButton(int button)
-{
-    if (!s_window)
+    bool Input::GetKey(KeyCode key)
     {
-        return false;
+        if (!s_window)
+        {
+            return false;
+        }
+
+        return glfwGetKey(s_window, key) == GLFW_PRESS;
     }
 
-    return glfwGetMouseButton(s_window, button) == GLFW_PRESS;
-}
-
-float Input::GetMouseX()
-{
-    return s_mouseX;
-}
-
-float Input::GetMouseY()
-{
-    return s_mouseY;
-}
-
-float Input::GetMouseDeltaX()
-{
-    return s_mouseDeltaX;
-}
-
-float Input::GetMouseDeltaY()
-{
-    return s_mouseDeltaY;
-}
-
-void Input::Update()
-{
-    if (!s_window)
+    bool Input::GetMouseButton(MouseCode button)
     {
-        return;
+        if (!s_window)
+        {
+            return false;
+        }
+
+        return glfwGetMouseButton(s_window, button) == GLFW_PRESS;
     }
 
-    double x;
-    double y;
+    float Input::GetMouseX()
+    {
+        return s_mouseX;
+    }
 
-    glfwGetCursorPos(s_window, &x, &y);
+    float Input::GetMouseY()
+    {
+        return s_mouseY;
+    }
 
-    s_mouseX = (float)x;
-    s_mouseY = (float)y;
+    float Input::GetMouseDeltaX()
+    {
+        return s_mouseDeltaX;
+    }
 
-    s_mouseDeltaX = s_mouseX - s_lastMouseX;
+    float Input::GetMouseDeltaY()
+    {
+        return s_mouseDeltaY;
+    }
 
-    s_mouseDeltaY = s_mouseY - s_lastMouseY;
+    void Input::Update()
+    {
+        if (!s_window)
+        {
+            return;
+        }
 
-    s_lastMouseX = s_mouseX;
+        double x;
+        double y;
 
-    s_lastMouseY = s_mouseY;
-}
+        glfwGetCursorPos(s_window, &x, &y);
+
+        s_mouseX = (float)x;
+        s_mouseY = (float)y;
+
+        s_mouseDeltaX = s_mouseX - s_lastMouseX;
+
+        s_mouseDeltaY = s_mouseY - s_lastMouseY;
+
+        s_lastMouseX = s_mouseX;
+
+        s_lastMouseY = s_mouseY;
+    }
+} // namespace Aion

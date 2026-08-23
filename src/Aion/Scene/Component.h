@@ -1,44 +1,39 @@
 #pragma once
 
-class Object3D;
-class Transform;
-class Event;
-
-class Component
+namespace Aion
 {
-  public:
-    Component();
-    virtual ~Component();
+    class Object3D;
+    class Transform;
+    class Event;
 
-    virtual void OnStart()
+    class Component
     {
-    }
-    virtual void OnCreate()
-    {
-    }
-    virtual void OnUpdate(float deltaTime)
-    {
-    }
-    virtual void OnDestroy() {};
-    virtual void OnEvent(Event& event)
-    {
-    }
+    public:
+        Component();
+        virtual ~Component();
 
-    Object3D* GetOwner() const;
-    Transform& GetTransform() const;
+        virtual void OnStart() {}
+        virtual void OnCreate() {}
+        virtual void OnUpdate(float deltaTime) {}
+        virtual void OnDestroy() {};
+        virtual void OnEvent(Event& event) {}
 
-    void SetOwner(Object3D* owner);
+        Object3D* GetOwner() const;
+        Transform& GetTransform() const;
 
-    bool IsEnabled() const;
-    bool IsStarted() const;
-    void SetEnabled(bool enabled);
-    void SetStarted(bool started);
+        void SetOwner(Object3D* owner);
 
-  private:
-    friend class Object3D;
+        bool IsEnabled() const;
+        bool IsStarted() const;
+        void SetEnabled(bool enabled);
+        void SetStarted(bool started);
 
-    Object3D* m_owner;
+    private:
+        friend class Object3D;
 
-    bool m_enabled;
-    bool m_started;
-};
+        Object3D* m_owner;
+
+        bool m_enabled;
+        bool m_started;
+    };
+} // namespace Aion

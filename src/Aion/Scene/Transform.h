@@ -1,16 +1,20 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "Aion/Math/Math.h"
+#include "Aion/Math/Matrix4.h"
 
-class Transform
+namespace Aion
 {
-  public:
-    Transform();
+    class Transform
+    {
+    public:
+        Transform();
 
-    glm::mat4 GetMatrix() const;
+        Matrix4 GetMatrix() const;
 
-  public:
-    glm::vec3 Position;
-    glm::vec3 Rotation;
-    glm::vec3 Scale;
-};
+    public:
+        Vector3 Position;
+        Vector3 Rotation;
+        Vector3 Scale;
+    };
+} // namespace Aion

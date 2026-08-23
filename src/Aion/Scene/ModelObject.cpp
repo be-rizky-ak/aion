@@ -1,11 +1,14 @@
 #include "ModelObject.h"
 
-ModelObject::ModelObject(Model* model)
+namespace Aion
 {
-    m_model = model;
-}
+    ModelObject::ModelObject(Model* model)
+    {
+        m_model = model;
+    }
 
-Model* ModelObject::GetModel() const
-{
-    return m_model;
-}
+    Model* ModelObject::GetModel() const
+    {
+        return m_model;
+    }
+} // namespace Aion

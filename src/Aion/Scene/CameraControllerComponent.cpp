@@ -9,159 +9,168 @@
 #include "../Core/MouseEvent.h"
 #include "../Core/Time.h"
 
+#include "Aion/Math/Math.h"
+
 #include "Camera.h"
 #include "Object3D.h"
 
-CameraControllerComponent::CameraControllerComponent()
+namespace Aion
 {
-    m_moveSpeed = 5.0f;
-    m_mouseSensitivity = 0.1f;
-
-    m_yaw = -90.0f;
-    m_pitch = 0.0f;
-
-    m_forward = false;
-    m_backward = false;
-    m_left = false;
-    m_right = false;
-
-    m_rotating = false;
-}
-
-void CameraControllerComponent::OnUpdate(float deltaTime)
-{
-    Transform& transform = GetOwner()->Transform;
-
-    glm::vec3 forward(cos(glm::radians(m_yaw)), 0.0f, sin(glm::radians(m_yaw)));
-
-    forward = glm::normalize(forward);
-
-    glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
-
-    float speed = m_moveSpeed * deltaTime;
-
-    if (m_forward)
+    CameraControllerComponent::CameraControllerComponent()
     {
-        transform.Position += forward * speed;
+        m_moveSpeed = 5.0f;
+        m_mouseSensitivity = 0.1f;
+
+        m_yaw = 0.0f;
+        m_pitch = 0.0f;
+
+        m_forward = false;
+        m_backward = false;
+        m_left = false;
+        m_right = false;
+
+        m_rotating = false;
+        m_firstMouse = false;
     }
 
-    if (m_backward)
+    void CameraControllerComponent::OnUpdate(float deltaTime)
     {
-        transform.Position -= forward * speed;
-    }
+        Transform& transform = GetOwner()->Transform;
 
-    if (m_left)
-    {
-        transform.Position -= right * speed;
-    }
+        float yawRad = Math::Radians(m_yaw);
+        float pitchRad = Math::Radians(m_pitch);
 
-    if (m_right)
-    {
-        transform.Position += right * speed;
-    }
+        Vector3 forward(std::sin(yawRad) * std::cos(pitchRad), std::sin(pitchRad),
+                        -std::cos(yawRad) * std::cos(pitchRad));
 
-    transform.Rotation.x = m_pitch;
+        forward = Normalize(forward);
 
-    transform.Rotation.y = m_yaw;
-}
+        Vector3 worldUp(0.0f, 1.0f, 0.0f);
+        Vector3 right = Normalize(Cross(forward, worldUp));
 
-void CameraControllerComponent::OnEvent(Event& event)
-{
-    switch (event.GetType())
-    {
-    case EventType::KeyPressed: {
-        KeyPressedEvent& keyEvent = static_cast<KeyPressedEvent&>(event);
+        float speed = m_moveSpeed * deltaTime;
 
-        switch (keyEvent.Key)
+        if (m_forward)
         {
-        case GLFW_KEY_W:
-            m_forward = true;
-            break;
+            transform.Position += forward * speed;
+        }
 
-        case GLFW_KEY_S:
-            m_backward = true;
-            break;
+        if (m_backward)
+        {
+            transform.Position -= forward * speed;
+        }
 
-        case GLFW_KEY_A:
-            m_left = true;
-            break;
+        if (m_left)
+        {
+            transform.Position -= right * speed;
+        }
 
-        case GLFW_KEY_D:
-            m_right = true;
+        if (m_right)
+        {
+            transform.Position += right * speed;
+        }
+
+        transform.Rotation.x = m_pitch;
+
+        transform.Rotation.y = m_yaw;
+    }
+
+    void CameraControllerComponent::OnEvent(Event& event)
+    {
+        switch (event.GetType())
+        {
+        case EventType::KeyPressed:
+        {
+            auto& keyEvent = static_cast<KeyPressedEvent&>(event);
+
+            switch (keyEvent.Key)
+            {
+            case Key::W:
+                m_forward = true;
+                break;
+            case Key::S:
+                m_backward = true;
+                break;
+            case Key::A:
+                m_left = true;
+                break;
+            case Key::D:
+                m_right = true;
+                break;
+            }
             break;
         }
 
-        break;
-    }
-
-    case EventType::KeyReleased: {
-        KeyReleasedEvent& keyEvent = static_cast<KeyReleasedEvent&>(event);
-
-        switch (keyEvent.Key)
+        case EventType::KeyReleased:
         {
-        case GLFW_KEY_W:
-            m_forward = false;
-            break;
+            auto& keyEvent = static_cast<KeyReleasedEvent&>(event);
 
-        case GLFW_KEY_S:
-            m_backward = false;
-            break;
-
-        case GLFW_KEY_A:
-            m_left = false;
-            break;
-
-        case GLFW_KEY_D:
-            m_right = false;
+            switch (keyEvent.Key)
+            {
+            case Key::W:
+                m_forward = false;
+                break;
+            case Key::S:
+                m_backward = false;
+                break;
+            case Key::A:
+                m_left = false;
+                break;
+            case Key::D:
+                m_right = false;
+                break;
+            }
             break;
         }
 
-        break;
-    }
-
-    case EventType::MouseButtonPressed: {
-        MouseButtonPressedEvent& mouseEvent = static_cast<MouseButtonPressedEvent&>(event);
-
-        if (mouseEvent.Button == GLFW_MOUSE_BUTTON_LEFT)
+        case EventType::MouseButtonPressed:
         {
-            m_rotating = true;
+            auto& mouseEvent = static_cast<MouseButtonPressedEvent&>(event);
+
+            if (mouseEvent.Button == Mouse::ButtonLeft)
+            {
+                m_rotating = true;
+                m_firstMouse = true;
+            }
+            break;
         }
 
-        break;
-    }
-
-    case EventType::MouseButtonReleased: {
-        MouseButtonReleasedEvent& mouseEvent = static_cast<MouseButtonReleasedEvent&>(event);
-
-        if (mouseEvent.Button == GLFW_MOUSE_BUTTON_LEFT)
+        case EventType::MouseButtonReleased:
         {
-            m_rotating = false;
+            auto& mouseEvent = static_cast<MouseButtonReleasedEvent&>(event);
+
+            if (mouseEvent.Button == Mouse::ButtonLeft)
+            {
+                m_rotating = false;
+            }
+            break;
         }
 
-        break;
-    }
-
-    case EventType::MouseMoved: {
-        MouseMovedEvent& mouseEvent = static_cast<MouseMovedEvent&>(event);
-
-        if (m_rotating)
+        case EventType::MouseMoved:
         {
-            float deltaX = mouseEvent.X - m_lastMouseX;
+            MouseMovedEvent& mouseEvent = static_cast<MouseMovedEvent&>(event);
 
-            float deltaY = mouseEvent.Y - m_lastMouseY;
+            if (m_rotating)
+            {
+                if (m_firstMouse)
+                {
+                    m_lastMouseX = mouseEvent.X;
+                    m_lastMouseY = mouseEvent.Y;
+                    m_firstMouse = false;
+                }
 
-            m_yaw += deltaX * m_mouseSensitivity;
+                float deltaX = mouseEvent.X - m_lastMouseX;
+                float deltaY = mouseEvent.Y - m_lastMouseY;
 
-            m_pitch -= deltaY * m_mouseSensitivity;
+                m_yaw += deltaX * m_mouseSensitivity;
+                m_pitch -= deltaY * m_mouseSensitivity;
+                m_pitch = Math::Clamp(m_pitch, -89.0f, 89.0f);
 
-            m_pitch = glm::clamp(m_pitch, -89.0f, 89.0f);
+                m_lastMouseX = mouseEvent.X;
+                m_lastMouseY = mouseEvent.Y;
+            }
+            break;
         }
-
-        m_lastMouseX = mouseEvent.X;
-
-        m_lastMouseY = mouseEvent.Y;
-
-        break;
+        }
     }
-    }
-}
+} // namespace Aion

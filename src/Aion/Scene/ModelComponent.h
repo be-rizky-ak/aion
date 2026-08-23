@@ -2,20 +2,18 @@
 
 #include "Component.h"
 
-class Model;
-
-class ModelComponent : public Component
+namespace Aion
 {
-  public:
-    ModelComponent(Model* model) : m_model(model)
-    {
-    }
+    class Model;
 
-    ~ModelComponent()
+    class ModelComponent : public Component
     {
-        delete m_model;
-    }
+    public:
+        ModelComponent(Model* model) : m_model(model) {}
 
-  private:
-    Model* m_model;
-};
+        ~ModelComponent() { delete m_model; }
+
+    private:
+        Model* m_model;
+    };
+} // namespace Aion

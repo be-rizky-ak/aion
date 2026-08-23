@@ -5,24 +5,27 @@
 #include "../Scene/ModelComponent.h"
 #include "../Scene/Object3D.h"
 
-Object3D* ModelImporter::Load(const std::string& path)
+namespace Aion
 {
-    Model* model = new Model(path);
-
-    Object3D* root = new Object3D();
-
-    const auto& primitives = model->GetPrimitives();
-
-    for (const auto& primitive : primitives)
+    Object3D* ModelImporter::Load(const std::string& path)
     {
-        Object3D* child = new Object3D();
+        Model* model = new Model(path);
 
-        child->AddComponent<MeshRenderer>(primitive.Mesh, primitive.Material);
+        Object3D* root = new Object3D();
 
-        root->AddChild(child);
+        const auto& primitives = model->GetPrimitives();
+
+        for (const auto& primitive : primitives)
+        {
+            Object3D* child = new Object3D();
+
+            child->AddComponent<MeshRenderer>(primitive.Mesh, primitive.Material);
+
+            root->AddChild(child);
+        }
+
+        root->AddComponent<ModelComponent>(model);
+
+        return root;
     }
-
-    root->AddComponent<ModelComponent>(model);
-
-    return root;
-}
+} // namespace Aion

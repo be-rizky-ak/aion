@@ -2,28 +2,27 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-Transform::Transform() : Position(0.0f, 0.0f, 0.0f), Rotation(0.0f, 0.0f, 0.0f), Scale(1.0f, 1.0f, 1.0f)
+namespace Aion
 {
-}
+    Transform::Transform()
+        : Position(0.0f, 0.0f, 0.0f), Rotation(0.0f, 0.0f, 0.0f), Scale(1.0f, 1.0f, 1.0f)
+    {
+    }
 
-glm::mat4 Transform::GetMatrix() const
-{
-    glm::mat4 matrix = glm::mat4(1.0f);
+    Matrix4 Transform::GetMatrix() const
+    {
 
-    // Translation
-    matrix = glm::translate(matrix, Position);
+        // Translation
+        Matrix4 translation = Matrix4::Translate(Position);
 
-    // Rotation X
-    matrix = glm::rotate(matrix, glm::radians(Rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        Matrix4 rotX = Matrix4::Rotate(Math::Radians(Rotation.x), Vector3(1.0f, 0.0f, 0.0f));
+        Matrix4 rotY = Matrix4::Rotate(Math::Radians(Rotation.y), Vector3(0.0f, 1.0f, 0.0f));
+        Matrix4 rotZ = Matrix4::Rotate(Math::Radians(Rotation.z), Vector3(0.0f, 0.0f, 1.0f));
 
-    // Rotation Y
-    matrix = glm::rotate(matrix, glm::radians(Rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        Matrix4 rotation = rotZ * rotY * rotX;
 
-    // Rotation Z
-    matrix = glm::rotate(matrix, glm::radians(Rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        Matrix4 scale = Matrix4::Scale(Scale);
 
-    // Scale
-    matrix = glm::scale(matrix, Scale);
-
-    return matrix;
-}
+        return translation * rotation * scale;
+    }
+} // namespace Aion

@@ -57,12 +57,13 @@ target_include_directories(AionEngine PUBLIC
     external
 )
 
+find_package(OpenGL REQUIRED)
 target_link_libraries(
     AionEngine
     PUBLIC
     glfw
     glad
-    opengl32
+    OpenGL::GL
 )
 
 # ==================================================

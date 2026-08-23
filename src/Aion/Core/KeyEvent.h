@@ -1,33 +1,27 @@
 #pragma once
 
 #include "Event.h"
+#include "KeyCodes.h"
 
-class KeyPressedEvent : public Event
+namespace Aion
 {
-  public:
-    KeyPressedEvent(int key) : Key(key)
+    class KeyPressedEvent : public Event
     {
-    }
+    public:
+        KeyPressedEvent(KeyCode key) : Key(key) {}
 
-    EventType GetType() const override
+        EventType GetType() const override { return EventType::KeyPressed; }
+
+        KeyCode Key;
+    };
+
+    class KeyReleasedEvent : public Event
     {
-        return EventType::KeyPressed;
-    }
+    public:
+        KeyReleasedEvent(KeyCode key) : Key(key) {}
 
-    int Key;
-};
+        EventType GetType() const override { return EventType::KeyReleased; }
 
-class KeyReleasedEvent : public Event
-{
-  public:
-    KeyReleasedEvent(int key) : Key(key)
-    {
-    }
-
-    EventType GetType() const override
-    {
-        return EventType::KeyReleased;
-    }
-
-    int Key;
-};
+        KeyCode Key;
+    };
+} // namespace Aion

@@ -2,18 +2,21 @@
 
 #include "Event.h"
 
-class EventDispatcher
+namespace Aion
 {
-  public:
-    template <typename T, typename F> static bool Dispatch(Event& event, F&& callback)
+    class EventDispatcher
     {
-        if (event.GetType() == T().GetType())
+    public:
+        template <typename T, typename F> static bool Dispatch(Event& event, F&& callback)
         {
-            event.Handled = callback(static_cast<T&>(event));
+            if (event.GetType() == T().GetType())
+            {
+                event.Handled = callback(static_cast<T&>(event));
 
-            return true;
+                return true;
+            }
+
+            return false;
         }
-
-        return false;
-    }
-};
+    };
+} // namespace Aion

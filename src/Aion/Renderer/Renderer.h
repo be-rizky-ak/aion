@@ -2,27 +2,26 @@
 
 #include <cstdint>
 
-class Scene;
-class Camera;
-class Shader;
-class Object3D;
-
-class Renderer
+namespace Aion
 {
-  public:
-    Renderer();
-    ~Renderer();
+    class Scene;
+    class CameraComponent;
+    class Shader;
+    class Object3D;
 
-    void Init();
-    void Render(Scene* scene);
-    void Shutdown();
+    class Renderer
+    {
+    public:
+        Renderer();
+        ~Renderer();
 
-    void OnResize(uint32_t width, uint32_t height);
+        void Init();
+        void Render(Scene* scene);
+        void Shutdown();
 
-    Shader* GetDefaultShader() const;
+        void OnResize(uint32_t width, uint32_t height);
 
-  private:
-    void RenderObject(Object3D* object, Camera* camera);
-
-    Shader* m_defaultShader;
-};
+    private:
+        void RenderObject(Object3D* object, CameraComponent* camera);
+    };
+} // namespace Aion

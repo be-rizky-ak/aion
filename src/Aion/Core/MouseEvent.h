@@ -1,49 +1,38 @@
 #pragma once
 
 #include "Event.h"
+#include "MouseCodes.h"
 
-class MouseMovedEvent : public Event
+namespace Aion
 {
-  public:
-    MouseMovedEvent(float x, float y) : X(x), Y(y)
+    class MouseMovedEvent : public Event
     {
-    }
+    public:
+        MouseMovedEvent(float x, float y) : X(x), Y(y) {}
 
-    EventType GetType() const override
+        EventType GetType() const override { return EventType::MouseMoved; }
+
+        float X;
+        float Y;
+    };
+
+    class MouseButtonPressedEvent : public Event
     {
-        return EventType::MouseMoved;
-    }
+    public:
+        MouseButtonPressedEvent(MouseCode button) : Button(button) {}
 
-    float X;
-    float Y;
-};
+        EventType GetType() const override { return EventType::MouseButtonPressed; }
 
-class MouseButtonPressedEvent : public Event
-{
-  public:
-    MouseButtonPressedEvent(int button) : Button(button)
+        MouseCode Button;
+    };
+
+    class MouseButtonReleasedEvent : public Event
     {
-    }
+    public:
+        MouseButtonReleasedEvent(MouseCode button) : Button(button) {}
 
-    EventType GetType() const override
-    {
-        return EventType::MouseButtonPressed;
-    }
+        EventType GetType() const override { return EventType::MouseButtonReleased; }
 
-    int Button;
-};
-
-class MouseButtonReleasedEvent : public Event
-{
-  public:
-    MouseButtonReleasedEvent(int button) : Button(button)
-    {
-    }
-
-    EventType GetType() const override
-    {
-        return EventType::MouseButtonReleased;
-    }
-
-    int Button;
-};
+        MouseCode Button;
+    };
+} // namespace Aion

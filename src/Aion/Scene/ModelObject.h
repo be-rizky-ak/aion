@@ -2,15 +2,18 @@
 
 #include "Object3D.h"
 
-class Model;
-
-class ModelObject : public Object3D
+namespace Aion
 {
-  public:
-    ModelObject(Model* model);
+    class Model;
 
-    Model* GetModel() const;
+    class ModelObject : public Object3D
+    {
+    public:
+        ModelObject(Model* model);
 
-  private:
-    Model* m_model;
-};
+        Model* GetModel() const;
+
+    private:
+        Model* m_model;
+    };
+} // namespace Aion

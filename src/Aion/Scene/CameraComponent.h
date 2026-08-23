@@ -1,24 +1,25 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <memory>
 
+#include "Camera.h"
 #include "Component.h"
 
-class Camera;
-
-class CameraComponent : public Component
+namespace Aion
 {
-  public:
-    CameraComponent();
-    CameraComponent(Camera* camera);
+    class CameraComponent : public Component
+    {
+    public:
+        CameraComponent(std::unique_ptr<Camera> camera) : m_camera(std::move(camera)) {}
 
-    ~CameraComponent();
+        Camera* GetCamera() const { return m_camera.get(); }
+        void SetCamera(std::unique_ptr<Camera> camera) { m_camera = std::move(camera); }
 
-    Camera* GetCamera() const;
+        Matrix4 GetViewMatrix() const;
+        Matrix4 GetProjectionMatrix() const;
 
-    virtual glm::mat4 GetViewMatrix() const = 0;
-    virtual glm::mat4 GetProjectionMatrix() const = 0;
-
-  private:
-    Camera* m_camera;
-};
+    private:
+        std::unique_ptr<Camera> m_camera;
+    };
+} // namespace Aion

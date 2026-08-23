@@ -2,7 +2,10 @@
 
 #include "Object3D.h"
 
-void RotatorComponent::OnUpdate(float deltaTime)
+namespace Aion
 {
-    GetTransform().Rotation += Speed * deltaTime;
-}
+    void RotatorComponent::OnUpdate(float deltaTime)
+    {
+        GetTransform().Rotation += Speed * deltaTime;
+    }
+} // namespace Aion

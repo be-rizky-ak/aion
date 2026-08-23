@@ -1,18 +1,16 @@
 #include "CameraComponent.h"
 
-CameraComponent::CameraComponent()
-{
-}
+#include "Object3D.h"
 
-CameraComponent::CameraComponent(Camera* camera) : m_camera(camera)
+namespace Aion
 {
-}
+    Matrix4 CameraComponent::GetViewMatrix() const
+    {
+        return Matrix4::Inverse(GetOwner()->GetWorldMatrix());
+    }
 
-CameraComponent::~CameraComponent()
-{
-}
-
-Camera* CameraComponent::GetCamera() const
-{
-    return m_camera;
-}
+    Matrix4 CameraComponent::GetProjectionMatrix() const
+    {
+        return m_camera ? m_camera->GetProjectionMatrix() : Matrix4(1.0f);
+    }
+} // namespace Aion

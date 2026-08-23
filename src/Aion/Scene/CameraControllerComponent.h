@@ -2,30 +2,35 @@
 
 #include "Component.h"
 
-class Camera;
-
-class CameraControllerComponent : public Component
+namespace Aion
 {
-  public:
-    CameraControllerComponent();
+    class Camera;
+    class Event;
 
-    void OnUpdate(float deltaTime) override;
-    virtual void OnEvent(Event& event) override;
+    class CameraControllerComponent : public Component
+    {
+    public:
+        CameraControllerComponent();
 
-  private:
-    float m_moveSpeed;
-    float m_mouseSensitivity;
+        void OnUpdate(float deltaTime) override;
+        virtual void OnEvent(Event& event) override;
 
-    float m_yaw;
-    float m_pitch;
+    private:
+        float m_moveSpeed;
+        float m_mouseSensitivity;
 
-    bool m_forward;
-    bool m_backward;
-    bool m_left;
-    bool m_right;
+        float m_yaw;
+        float m_pitch;
 
-    bool m_rotating;
+        bool m_forward;
+        bool m_backward;
+        bool m_left;
+        bool m_right;
 
-    float m_lastMouseX;
-    float m_lastMouseY;
-};
+        bool m_rotating;
+        bool m_firstMouse;
+
+        float m_lastMouseX;
+        float m_lastMouseY;
+    };
+} // namespace Aion

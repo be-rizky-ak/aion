@@ -1,64 +1,76 @@
 #pragma once
 
+#include <cstdint>
+#include <memory>
+
 #include <glm/glm.hpp>
 
-class Shader;
-class Texture;
+#include "RenderState.h"
 
-enum class MaterialTextureSlot
+namespace Aion
 {
-    Albedo,
-    Normal,
-    MetallicRoughness,
-    Emissive
-};
+    class Shader;
+    class Texture;
 
-enum class AlphaMode
-{
-    Opaque,
-    Mask,
-    Blend
-};
+    enum class MaterialTextureSlot
+    {
+        Albedo,
+        Normal,
+        MetallicRoughness,
+        Emissive
+    };
 
-class Material
-{
-  public:
-    Material();
-    Material(Shader* shader);
+    enum class AlphaMode
+    {
+        Opaque,
+        Mask,
+        Blend
+    };
 
-    ~Material();
+    class Material
+    {
+    public:
+        Material();
+        Material(const std::shared_ptr<Shader>& shader);
 
-    void Bind();
+        RenderState State{};
 
-    Shader* GetShader() const;
+        ~Material();
 
-    void SetNormalTexture(Texture* texture);
-    void SetMetallicRoughnessTexture(Texture* texture);
-    void SetEmissiveTexture(Texture* texture);
-    void SetBaseColorTexture(Texture* texture);
-    void SetShader(Shader* shader);
+        void Bind();
 
-    Texture* GetNormalTexture() const;
-    Texture* GetMetallicRoughnessTexture() const;
-    Texture* GetEmissiveTexture() const;
-    Texture* GetBaseColorTexture() const;
+        const std::shared_ptr<Shader>& GetShader() const;
 
-  public:
-    glm::vec4 BaseColor;
+        void SetNormalTexture(Texture* texture);
+        void SetMetallicRoughnessTexture(Texture* texture);
+        void SetEmissiveTexture(Texture* texture);
+        void SetBaseColorTexture(Texture* texture);
+        void SetShader(const std::shared_ptr<Shader>& shader);
+        void SetDoubleSided(bool doubleSided);
+        void SetTransparent(bool transparent);
 
-    float MetallicFactor;
-    float RoughnessFactor;
+        Texture* GetNormalTexture() const;
+        Texture* GetMetallicRoughnessTexture() const;
+        Texture* GetEmissiveTexture() const;
+        Texture* GetBaseColorTexture() const;
 
-    glm::vec3 EmissiveFactor;
+    public:
+        glm::vec4 BaseColor;
 
-    AlphaMode AlphaModeType;
-    float AlphaCutoff;
-    bool DoubleSided;
+        float MetallicFactor;
+        float RoughnessFactor;
 
-  private:
-    Shader* m_shader;
-    Texture* m_normalTexture;
-    Texture* m_metallicRoughnessTexture;
-    Texture* m_emissiveTexture;
-    Texture* m_baseColorTexture;
-};
+        glm::vec3 EmissiveFactor;
+
+        AlphaMode AlphaModeType;
+        float AlphaCutoff;
+        bool DoubleSided;
+
+    private:
+        std::shared_ptr<Shader> m_shader;
+        Texture* m_normalTexture;
+        Texture* m_metallicRoughnessTexture;
+        Texture* m_emissiveTexture;
+        Texture* m_baseColorTexture;
+    };
+} // namespace Aion

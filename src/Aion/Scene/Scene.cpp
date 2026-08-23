@@ -1,73 +1,102 @@
 #include "Scene.h"
 
+#include <algorithm>
+
 #include "../Core/Event.h"
-#include "Camera.h"
+#include "CameraComponent.h"
 #include "Object3D.h"
+#include "Scene.h"
 
-Scene::Scene() : m_activeCamera(nullptr), m_started(false)
+namespace Aion
 {
-}
+    Scene::Scene() : m_activeCamera(nullptr), m_started(false) {}
 
-Scene::~Scene()
-{
-    for (Object3D* object : m_objects)
+    Scene::~Scene()
     {
-        delete object;
-    }
-}
-
-void Scene::Add(Object3D* object)
-{
-    if (object->GetParent())
-    {
-        return;
+        for (Object3D* object : m_objects)
+        {
+            delete object;
+        }
     }
 
-    m_objects.push_back(object);
-
-    if (m_started)
+    void Scene::Add(Object3D* object)
     {
-        object->Start();
-    }
-}
+        object->SetScene(this);
 
-const std::vector<Object3D*>& Scene::GetObjects() const
-{
-    return m_objects;
-}
+        m_objectMap[object->GetUUID()] = object;
 
-void Scene::SetActiveCamera(Camera* camera)
-{
-    m_activeCamera = camera;
-}
+        if (!object->GetParent())
+        {
+            m_objects.push_back(object);
+        }
 
-Camera* Scene::GetActiveCamera() const
-{
-    return m_activeCamera;
-}
-
-void Scene::Start()
-{
-    for (Object3D* object : m_objects)
-    {
-        object->Start();
+        if (m_started)
+        {
+            object->Start();
+        }
     }
 
-    m_started = true;
-}
-
-void Scene::Update(float deltaTime)
-{
-    for (Object3D* object : m_objects)
+    void Scene::AddRoot(Object3D* object)
     {
-        object->Update(deltaTime);
+        m_objects.push_back(object);
     }
-}
 
-void Scene::OnEvent(Event& event)
-{
-    for (Object3D* object : m_objects)
+    void Scene::RemoveRoot(Object3D* object)
     {
-        object->OnEvent(event);
+        auto it = std::find(m_objects.begin(), m_objects.end(), object);
+        if (it != m_objects.end())
+        {
+            m_objects.erase(it);
+        }
     }
-}
+
+    Object3D* Scene::GetObjectByUUID(UUID uuid)
+    {
+        if (m_objectMap.find(uuid) != m_objectMap.end())
+        {
+            return m_objectMap[uuid];
+        }
+        return nullptr;
+    }
+
+    const std::vector<Object3D*>& Scene::GetObjects() const
+    {
+        return m_objects;
+    }
+
+    void Scene::SetActiveCamera(CameraComponent* camera)
+    {
+        m_activeCamera = camera;
+    }
+
+    CameraComponent* Scene::GetActiveCamera() const
+    {
+        return m_activeCamera;
+    }
+
+    void Scene::Start()
+    {
+        for (Object3D* object : m_objects)
+        {
+            object->Start();
+        }
+
+        m_started = true;
+    }
+
+    void Scene::Update(float deltaTime)
+    {
+        for (Object3D* object : m_objects)
+        {
+            object->Update(deltaTime);
+        }
+    }
+
+    void Scene::OnEvent(Event& event)
+    {
+        for (Object3D* object : m_objects)
+        {
+            object->OnEvent(event);
+        }
+    }
+} // namespace Aion

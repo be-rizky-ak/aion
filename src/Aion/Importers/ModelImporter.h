@@ -2,10 +2,13 @@
 
 #include <string>
 
-class Object3D;
-
-class ModelImporter
+namespace Aion
 {
-  public:
-    static Object3D* Load(const std::string& path);
-};
+    class Object3D;
+
+    class ModelImporter
+    {
+    public:
+        static Object3D* Load(const std::string& path);
+    };
+} // namespace Aion

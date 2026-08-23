@@ -1,13 +1,15 @@
 #pragma once
 
+#include "Aion/Math/Vector3.h"
 #include "Component.h"
 
-#include <glm/glm.hpp>
-
-class RotatorComponent : public Component
+namespace Aion
 {
-  public:
-    glm::vec3 Speed = {0.0f, 90.0f, 0.0f};
+    class RotatorComponent : public Component
+    {
+    public:
+        Vector3 Speed = {0.0f, 90.0f, 0.0f};
 
-    void OnUpdate(float deltaTime) override;
-};
+        void OnUpdate(float deltaTime) override;
+    };
+} // namespace Aion

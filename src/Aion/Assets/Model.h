@@ -3,31 +3,34 @@
 #include <string>
 #include <vector>
 
-class Mesh;
-class Material;
-class Texture;
-
-struct ModelPrimitive
+namespace Aion
 {
-    Mesh* Mesh;
-    Material* Material;
+    class Mesh;
+    class Material;
+    class Texture;
 
-    int NodeIndex;
-};
+    struct ModelPrimitive
+    {
+        Mesh* Mesh;
+        Material* Material;
 
-class Model
-{
-  public:
-    Model(const std::string& path);
+        int NodeIndex;
+    };
 
-    ~Model();
+    class Model
+    {
+    public:
+        Model(const std::string& path);
 
-    const std::vector<Texture*>& GetTextures() const;
+        ~Model();
 
-    const std::vector<ModelPrimitive>& GetPrimitives() const;
+        const std::vector<Texture*>& GetTextures() const;
 
-  private:
-    std::vector<ModelPrimitive> m_primitives;
-    std::vector<Texture*> m_textures;
-    std::vector<Material*> m_materials;
-};
+        const std::vector<ModelPrimitive>& GetPrimitives() const;
+
+    private:
+        std::vector<ModelPrimitive> m_primitives;
+        std::vector<Texture*> m_textures;
+        std::vector<Material*> m_materials;
+    };
+} // namespace Aion

@@ -2,24 +2,27 @@
 
 #include <string>
 
-class Texture
+namespace Aion
 {
-  public:
-    // Load from file
-    Texture(const std::string& path);
+    class Texture
+    {
+    public:
+        // Load from file
+        Texture(const std::string& path);
 
-    // Load from memory
-    Texture(unsigned char* data, int width, int height, int channels);
+        // Load from memory
+        Texture(unsigned char* data, int width, int height, int channels);
 
-    ~Texture();
+        ~Texture();
 
-    void Bind(unsigned int slot = 0) const;
+        void Bind(unsigned int slot = 0) const;
 
-    unsigned int GetID() const;
+        unsigned int GetID() const;
 
-  private:
-    void CreateTexture(unsigned char* data, int width, int height, int channels);
+    private:
+        void CreateTexture(unsigned char* data, int width, int height, int channels);
 
-  private:
-    unsigned int m_textureID;
-};
+    private:
+        unsigned int m_textureID;
+    };
+} // namespace Aion

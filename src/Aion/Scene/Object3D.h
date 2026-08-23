@@ -3,62 +3,76 @@
 #include <string>
 #include <vector>
 
+#include "../Core/UUID.h"
+#include "CameraComponent.h"
+
 #include "Transform.h"
 
-class Event;
-class Component;
-
-class Object3D
+namespace Aion
 {
-  public:
-    Object3D();
-    virtual ~Object3D();
+    class Event;
+    class Component;
+    class Scene;
 
-    virtual void OnEvent(Event& event);
-
-    Transform Transform;
-
-    void AddChild(Object3D* child);
-    void RemoveChild(Object3D* child);
-    void SetParent(Object3D* parent);
-
-    void Start();
-    void Update(float deltaTime);
-
-    Object3D* GetParent() const;
-    const std::vector<Object3D*>& GetChildren() const;
-    glm::mat4 GetWorldMatrix() const;
-
-    template <typename T, typename... Args> T* AddComponent(Args&&... args)
+    class Object3D
     {
-        T* component = new T(std::forward<Args>(args)...);
+    public:
+        Object3D();
+        virtual ~Object3D();
 
-        component->m_owner = this;
+        virtual void OnEvent(Event& event);
 
-        m_components.push_back(component);
+        Transform Transform;
 
-        component->OnCreate();
+        UUID GetUUID() const { return m_uuid; }
 
-        return component;
-    }
+        void AddChild(Object3D* child);
+        void RemoveChild(Object3D* child);
+        void SetParent(Object3D* parent);
 
-    template <typename T> T* GetComponent() const
-    {
-        for (Component* component : m_components)
+        void Start();
+        void Update(float deltaTime);
+
+        void SetScene(Scene* scene);
+        Scene* GetScene() const { return m_scene; }
+
+        Object3D* GetParent() const;
+        const std::vector<Object3D*>& GetChildren() const;
+        Matrix4 GetWorldMatrix() const;
+
+        template <typename T, typename... Args> T* AddComponent(Args&&... args)
         {
-            T* result = dynamic_cast<T*>(component);
+            T* component = new T(std::forward<Args>(args)...);
 
-            if (result)
-            {
-                return result;
-            }
+            component->m_owner = this;
+
+            m_components.push_back(component);
+
+            component->OnCreate();
+
+            return component;
         }
 
-        return nullptr;
-    }
+        template <typename T> T* GetComponent() const
+        {
+            for (Component* component : m_components)
+            {
+                T* result = dynamic_cast<T*>(component);
 
-  private:
-    Object3D* m_parent;
-    std::vector<Object3D*> m_children;
-    std::vector<Component*> m_components;
-};
+                if (result)
+                {
+                    return result;
+                }
+            }
+
+            return nullptr;
+        }
+
+    private:
+        UUID m_uuid;
+        Scene* m_scene;
+        Object3D* m_parent;
+        std::vector<Object3D*> m_children;
+        std::vector<Component*> m_components;
+    };
+} // namespace Aion

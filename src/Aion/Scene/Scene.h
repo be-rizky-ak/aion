@@ -1,31 +1,43 @@
 #pragma once
 
+#include <unordered_map>
 #include <vector>
 
-class Event;
-class Camera;
-class Object3D;
+#include "../Core/UUID.h"
 
-class Scene
+namespace Aion
 {
-  public:
-    Scene();
-    ~Scene();
+    class Event;
+    class CameraComponent;
+    class Object3D;
 
-    void Add(Object3D* object);
-    void SetActiveCamera(Camera* camera);
+    class Scene
+    {
+    public:
+        Scene();
+        ~Scene();
 
-    void Start();
-    void Update(float deltaTime);
+        void Add(Object3D* object);
+        void RemoveRoot(Object3D* object);
+        void AddRoot(Object3D* object);
 
-    void OnEvent(Event& event);
+        Object3D* GetObjectByUUID(UUID uuid);
 
-    const std::vector<Object3D*>& GetObjects() const;
-    Camera* GetActiveCamera() const;
+        void SetActiveCamera(CameraComponent* camera);
+        CameraComponent* GetActiveCamera() const;
 
-  private:
-    std::vector<Object3D*> m_objects;
-    Camera* m_activeCamera;
+        void Start();
+        void Update(float deltaTime);
 
-    bool m_started;
-};
+        void OnEvent(Event& event);
+
+        const std::vector<Object3D*>& GetObjects() const;
+
+    private:
+        std::vector<Object3D*> m_objects;
+        std::unordered_map<UUID, Object3D*> m_objectMap;
+        CameraComponent* m_activeCamera;
+
+        bool m_started;
+    };
+} // namespace Aion

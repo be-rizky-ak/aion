@@ -1,27 +1,30 @@
 #pragma once
 
-enum class EventType
+namespace Aion
 {
-    None = 0,
+    enum class EventType
+    {
+        None = 0,
 
-    WindowClose,
-    WindowResize,
+        WindowClose,
+        WindowResize,
 
-    KeyPressed,
-    KeyReleased,
+        KeyPressed,
+        KeyReleased,
 
-    MouseMoved,
+        MouseMoved,
 
-    MouseButtonPressed,
-    MouseButtonReleased
-};
+        MouseButtonPressed,
+        MouseButtonReleased
+    };
 
-class Event
-{
-  public:
-    virtual ~Event() = default;
+    class Event
+    {
+    public:
+        virtual ~Event() = default;
 
-    virtual EventType GetType() const = 0;
+        virtual EventType GetType() const = 0;
 
-    bool Handled = false;
-};
+        bool Handled = false;
+    };
+} // namespace Aion

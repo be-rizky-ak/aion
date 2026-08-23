@@ -4,26 +4,38 @@
 #include <string>
 
 struct GLFWwindow;
-class Event;
 
-class Window
+namespace Aion
 {
-  public:
-    using EventCallbackFn = std::function<void(Event&)>;
+    class Event;
 
-    Window(int width, int height, const std::string& title);
-    ~Window();
+    class Window
+    {
+    public:
+        using EventCallbackFn = std::function<void(Event&)>;
 
-    bool ShouldClose() const;
-    void SwapBuffers();
-    void PollEvents();
+        Window(int width, int height, const std::string& title);
+        ~Window();
 
-    GLFWwindow* GetNativeWindow() const;
+        bool ShouldClose() const;
+        void SwapBuffers();
+        void PollEvents();
+        void SetFullscreen(bool fullscreen);
+        bool IsFullscreen() const { return m_isFullscreen; }
 
-    void SetEventCallback(const EventCallbackFn& callback);
-    void SetVSync(bool enabled);
+        GLFWwindow* GetNativeWindow() const;
 
-  private:
-    GLFWwindow* m_window;
-    EventCallbackFn m_eventCallback;
-};
+        void SetEventCallback(const EventCallbackFn& callback);
+        void SetVSync(bool enabled);
+
+    private:
+        GLFWwindow* m_window;
+        EventCallbackFn m_eventCallback;
+
+        bool m_isFullscreen = false;
+        int m_windowedPosX = 100;
+        int m_windowedPosY = 100;
+        int m_windowedWidth = 1280;
+        int m_windowedHeight = 720;
+    };
+} // namespace Aion

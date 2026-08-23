@@ -1,6 +1,6 @@
 ---
 Language:        Cpp
-AlignAfterOpenBracket: true
+AlignAfterOpenBracket: DontAlign
 AccessModifierOffset: -4
 AlignArrayOfStructures: None
 AlignConsecutiveAssignments:
@@ -205,10 +205,10 @@ JavaScriptQuotes: Leave
 JavaScriptWrapImports: true
 KeepEmptyLines:
   AtEndOfFile:     false
-  AtStartOfBlock:  true
-  AtStartOfFile:   true
+  AtStartOfBlock:  false
+  AtStartOfFile:   false
 KeepFormFeed:    false
-LambdaBodyIndentation: Signature
+LambdaBodyIndentation: OuterScope
 LineEnding:      DeriveLF
 MacroBlockBegin: ''
 MacroBlockEnd:   ''

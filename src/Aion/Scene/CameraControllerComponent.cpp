@@ -41,7 +41,7 @@ namespace Aion
         float pitchRad = Math::Radians(m_pitch);
 
         Vector3 forward(std::sin(yawRad) * std::cos(pitchRad), std::sin(pitchRad),
-                        -std::cos(yawRad) * std::cos(pitchRad));
+            -std::cos(yawRad) * std::cos(pitchRad));
 
         forward = Normalize(forward);
 

@@ -2,8 +2,10 @@
 
 #include <iostream>
 
-#include <GLFW/glfw3.h>
+// clang-format off
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+// clang-format on
 
 #include "KeyEvent.h"
 #include "MouseEvent.h"
@@ -37,111 +39,106 @@ namespace Aion
             return;
         }
 
-        glfwSetWindowCloseCallback(m_window,
-                                   [](GLFWwindow* window)
-                                   {
-                                       Window* win = (Window*)glfwGetWindowUserPointer(window);
+        glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window)
+        {
+            Window* win = (Window*)glfwGetWindowUserPointer(window);
 
-                                       WindowCloseEvent event;
+            WindowCloseEvent event;
 
-                                       if (win->m_eventCallback)
-                                       {
-                                           win->m_eventCallback(event);
-                                       }
-                                   });
+            if (win->m_eventCallback)
+            {
+                win->m_eventCallback(event);
+            }
+        });
 
-        glfwSetFramebufferSizeCallback(m_window,
-                                       [](GLFWwindow* window, int width, int height)
-                                       {
-                                           Window* win = (Window*)glfwGetWindowUserPointer(window);
+        glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow* window, int width, int height)
+        {
+            Window* win = (Window*)glfwGetWindowUserPointer(window);
 
-                                           WindowResizeEvent event(width, height);
+            WindowResizeEvent event(width, height);
 
-                                           if (win->m_eventCallback)
-                                           {
-                                               win->m_eventCallback(event);
-                                           }
-                                       });
+            if (win->m_eventCallback)
+            {
+                win->m_eventCallback(event);
+            }
+        });
 
         glfwSetKeyCallback(m_window,
-                           [](GLFWwindow* window, int key, int scancode, int action, int mods)
-                           {
-                               Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+            [](GLFWwindow* window, int key, int scancode, int action, int mods)
+        {
+            Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
-                               if (!win)
-                               {
-                                   return;
-                               }
+            if (!win)
+            {
+                return;
+            }
 
-                               if (action == GLFW_PRESS)
-                               {
-                                   KeyPressedEvent event(key);
+            if (action == GLFW_PRESS)
+            {
+                KeyPressedEvent event(key);
 
-                                   if (win->m_eventCallback)
-                                   {
-                                       win->m_eventCallback(event);
-                                   }
-                               }
-                               else if (action == GLFW_RELEASE)
-                               {
-                                   KeyReleasedEvent event(key);
+                if (win->m_eventCallback)
+                {
+                    win->m_eventCallback(event);
+                }
+            }
+            else if (action == GLFW_RELEASE)
+            {
+                KeyReleasedEvent event(key);
 
-                                   if (win->m_eventCallback)
-                                   {
-                                       win->m_eventCallback(event);
-                                   }
-                               }
-                           });
+                if (win->m_eventCallback)
+                {
+                    win->m_eventCallback(event);
+                }
+            }
+        });
 
         glfwSetMouseButtonCallback(m_window,
-                                   [](GLFWwindow* window, int button, int action, int mods)
-                                   {
-                                       Window* win =
-                                           static_cast<Window*>(glfwGetWindowUserPointer(window));
+            [](GLFWwindow* window, int button, int action, int mods)
+        {
+            Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
-                                       if (!win)
-                                       {
-                                           return;
-                                       }
+            if (!win)
+            {
+                return;
+            }
 
-                                       if (action == GLFW_PRESS)
-                                       {
-                                           MouseButtonPressedEvent event(button);
+            if (action == GLFW_PRESS)
+            {
+                MouseButtonPressedEvent event(button);
 
-                                           if (win->m_eventCallback)
-                                           {
-                                               win->m_eventCallback(event);
-                                           }
-                                       }
-                                       else if (action == GLFW_RELEASE)
-                                       {
-                                           MouseButtonReleasedEvent event(button);
+                if (win->m_eventCallback)
+                {
+                    win->m_eventCallback(event);
+                }
+            }
+            else if (action == GLFW_RELEASE)
+            {
+                MouseButtonReleasedEvent event(button);
 
-                                           if (win->m_eventCallback)
-                                           {
-                                               win->m_eventCallback(event);
-                                           }
-                                       }
-                                   });
+                if (win->m_eventCallback)
+                {
+                    win->m_eventCallback(event);
+                }
+            }
+        });
 
-        glfwSetCursorPosCallback(m_window,
-                                 [](GLFWwindow* window, double xpos, double ypos)
-                                 {
-                                     Window* win =
-                                         static_cast<Window*>(glfwGetWindowUserPointer(window));
+        glfwSetCursorPosCallback(m_window, [](GLFWwindow* window, double xpos, double ypos)
+        {
+            Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
-                                     if (!win)
-                                     {
-                                         return;
-                                     }
+            if (!win)
+            {
+                return;
+            }
 
-                                     MouseMovedEvent event((float)xpos, (float)ypos);
+            MouseMovedEvent event((float)xpos, (float)ypos);
 
-                                     if (win->m_eventCallback)
-                                     {
-                                         win->m_eventCallback(event);
-                                     }
-                                 });
+            if (win->m_eventCallback)
+            {
+                win->m_eventCallback(event);
+            }
+        });
 
         glfwSetWindowUserPointer(m_window, this);
 
@@ -205,13 +202,13 @@ namespace Aion
             GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
             const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
 
-            glfwSetWindowMonitor(m_window, primaryMonitor, 0, 0, mode->width, mode->height,
-                                 mode->refreshRate);
+            glfwSetWindowMonitor(
+                m_window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
         }
         else
         {
             glfwSetWindowMonitor(m_window, nullptr, m_windowedPosX, m_windowedPosY, m_windowedWidth,
-                                 m_windowedHeight, 0);
+                m_windowedHeight, 0);
         }
 
         m_isFullscreen = fullscreen;

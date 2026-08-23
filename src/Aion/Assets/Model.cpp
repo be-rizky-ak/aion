@@ -19,8 +19,8 @@
 
 namespace Aion
 {
-    static Texture* GetTextureFromGLTF(int textureIndex, const tinygltf::Model& gltfModel,
-                                       const std::vector<Texture*>& textures)
+    static Texture* GetTextureFromGLTF(
+        int textureIndex, const tinygltf::Model& gltfModel, const std::vector<Texture*>& textures)
     {
         if (textureIndex < 0)
         {
@@ -55,7 +55,7 @@ namespace Aion
         if (node.rotation.size() == 4)
         {
             rotation = glm::quat((float)node.rotation[3], (float)node.rotation[0],
-                                 (float)node.rotation[1], (float)node.rotation[2]);
+                (float)node.rotation[1], (float)node.rotation[2]);
         }
 
         glm::vec3 scale(1.0f);
@@ -69,9 +69,8 @@ namespace Aion
     }
 
     static void ProcessGLTFNode(const tinygltf::Model& gltfModel, int nodeIndex,
-                                const glm::mat4& parentTransform,
-                                const std::vector<Material*>& materials,
-                                std::vector<ModelPrimitive>& outPrimitives)
+        const glm::mat4& parentTransform, const std::vector<Material*>& materials,
+        std::vector<ModelPrimitive>& outPrimitives)
     {
         const tinygltf::Node& node = gltfModel.nodes[nodeIndex];
         glm::mat4 localTransform = GetNodeMatrix(node);
@@ -98,9 +97,8 @@ namespace Aion
                 {
                     const tinygltf::Accessor& accessor = gltfModel.accessors[posIt->second];
                     const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
-                    positionBuffer = reinterpret_cast<const float*>(
-                        &gltfModel.buffers[view.buffer]
-                             .data[accessor.byteOffset + view.byteOffset]);
+                    positionBuffer = reinterpret_cast<const float*>(&gltfModel.buffers[view.buffer]
+                            .data[accessor.byteOffset + view.byteOffset]);
                     vertexCount = (int)accessor.count;
                 }
 
@@ -110,9 +108,8 @@ namespace Aion
                 {
                     const tinygltf::Accessor& accessor = gltfModel.accessors[normalIt->second];
                     const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
-                    normalBuffer = reinterpret_cast<const float*>(
-                        &gltfModel.buffers[view.buffer]
-                             .data[accessor.byteOffset + view.byteOffset]);
+                    normalBuffer = reinterpret_cast<const float*>(&gltfModel.buffers[view.buffer]
+                            .data[accessor.byteOffset + view.byteOffset]);
                 }
 
                 // UV
@@ -121,9 +118,8 @@ namespace Aion
                 {
                     const tinygltf::Accessor& accessor = gltfModel.accessors[uvIt->second];
                     const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
-                    uvBuffer = reinterpret_cast<const float*>(
-                        &gltfModel.buffers[view.buffer]
-                             .data[accessor.byteOffset + view.byteOffset]);
+                    uvBuffer = reinterpret_cast<const float*>(&gltfModel.buffers[view.buffer]
+                            .data[accessor.byteOffset + view.byteOffset]);
                 }
 
                 // VERTICES (Apply node transformation matrix to position & normal)
@@ -132,13 +128,13 @@ namespace Aion
                     Vertex vertex;
 
                     glm::vec4 rawPos(positionBuffer[i * 3 + 0], positionBuffer[i * 3 + 1],
-                                     positionBuffer[i * 3 + 2], 1.0f);
+                        positionBuffer[i * 3 + 2], 1.0f);
                     vertex.Position = glm::vec3(worldTransform * rawPos);
 
                     if (normalBuffer)
                     {
                         glm::vec3 rawNormal(normalBuffer[i * 3 + 0], normalBuffer[i * 3 + 1],
-                                            normalBuffer[i * 3 + 2]);
+                            normalBuffer[i * 3 + 2]);
                         vertex.Normal = glm::normalize(normalMatrix * rawNormal);
                     }
                     else
@@ -248,7 +244,7 @@ namespace Aion
         for (const auto& image : gltfModel.images)
         {
             Texture* texture = new Texture(const_cast<unsigned char*>(image.image.data()),
-                                           image.width, image.height, image.component);
+                image.width, image.height, image.component);
 
             m_textures.push_back(texture);
         }
@@ -265,7 +261,7 @@ namespace Aion
             {
                 material->BaseColor =
                     glm::vec4((float)pbr.baseColorFactor[0], (float)pbr.baseColorFactor[1],
-                              (float)pbr.baseColorFactor[2], (float)pbr.baseColorFactor[3]);
+                        (float)pbr.baseColorFactor[2], (float)pbr.baseColorFactor[3]);
             }
 
             material->MetallicFactor = (float)pbr.metallicFactor;
@@ -283,8 +279,7 @@ namespace Aion
             if (gltfMaterial.emissiveFactor.size() == 3)
             {
                 material->EmissiveFactor = glm::vec3((float)gltfMaterial.emissiveFactor[0],
-                                                     (float)gltfMaterial.emissiveFactor[1],
-                                                     (float)gltfMaterial.emissiveFactor[2]);
+                    (float)gltfMaterial.emissiveFactor[1], (float)gltfMaterial.emissiveFactor[2]);
             }
 
             material->AlphaCutoff = (float)gltfMaterial.alphaCutoff;

@@ -7,8 +7,8 @@ namespace Aion
     class OrthographicCamera : public Camera
     {
     public:
-        OrthographicCamera(float left, float right, float bottom, float top, float nearPlane,
-                           float farPlane);
+        OrthographicCamera(
+            float left, float right, float bottom, float top, float nearPlane, float farPlane);
 
         Matrix4 GetProjectionMatrix() const override;
 

@@ -13,7 +13,7 @@ namespace Aion
     struct Matrix4
     {
         Vector4 Columns[4]{Vector4(1.0f, 0.0f, 0.0f, 0.0f), Vector4(0.0f, 1.0f, 0.0f, 0.0f),
-                           Vector4(0.0f, 0.0f, 1.0f, 0.0f), Vector4(0.0f, 0.0f, 0.0f, 1.0f)};
+            Vector4(0.0f, 0.0f, 1.0f, 0.0f), Vector4(0.0f, 0.0f, 0.0f, 1.0f)};
 
         Matrix4() = default;
 
@@ -36,7 +36,7 @@ namespace Aion
         operator glm::mat4() const
         {
             return glm::mat4((glm::vec4)Columns[0], (glm::vec4)Columns[1], (glm::vec4)Columns[2],
-                             (glm::vec4)Columns[3]);
+                (glm::vec4)Columns[3]);
         }
 
         const float* ValuePtr() const { return &Columns[0].x; }
@@ -75,8 +75,8 @@ namespace Aion
             return Matrix4(glm::perspective(fovRadians, aspectRatio, zNear, zFar));
         }
 
-        static Matrix4 Ortho(float left, float right, float bottom, float top, float zNear,
-                             float zFar)
+        static Matrix4 Ortho(
+            float left, float right, float bottom, float top, float zNear, float zFar)
         {
             return Matrix4(glm::ortho(left, right, bottom, top, zNear, zFar));
         }

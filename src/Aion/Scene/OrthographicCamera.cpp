@@ -3,8 +3,8 @@
 
 namespace Aion
 {
-    OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top,
-                                           float nearPlane, float farPlane)
+    OrthographicCamera::OrthographicCamera(
+        float left, float right, float bottom, float top, float nearPlane, float farPlane)
         : m_left(left), m_right(right), m_bottom(bottom), m_top(top), m_near(nearPlane),
           m_far(farPlane)
     {

@@ -9,25 +9,25 @@ namespace Aion
         glBindVertexArray(m_VAO);
 
         // Vertex Buffer
-        m_VBO = std::make_unique<VertexBuffer>(vertices.data(),
-                                               (uint32_t)(vertices.size() * sizeof(Vertex)));
+        m_VBO = std::make_unique<VertexBuffer>(
+            vertices.data(), (uint32_t)(vertices.size() * sizeof(Vertex)));
 
         // Index Buffer
         m_EBO = std::make_unique<IndexBuffer>(indices.data(), (uint32_t)indices.size());
 
         // Position
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (void*)offsetof(Vertex, Position));
+        glVertexAttribPointer(
+            0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Position));
         glEnableVertexAttribArray(0);
 
         // Normal
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (void*)offsetof(Vertex, Normal));
+        glVertexAttribPointer(
+            1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
         glEnableVertexAttribArray(1);
 
         // UV
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (void*)offsetof(Vertex, UV));
+        glVertexAttribPointer(
+            2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, UV));
         glEnableVertexAttribArray(2);
 
         glBindVertexArray(0);

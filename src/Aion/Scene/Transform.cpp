@@ -11,7 +11,6 @@ namespace Aion
 
     Matrix4 Transform::GetMatrix() const
     {
-
         // Translation
         Matrix4 translation = Matrix4::Translate(Position);
 

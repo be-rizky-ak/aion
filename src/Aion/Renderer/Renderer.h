@@ -1,6 +1,10 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
+#include <vector>
+
+#include "RenderQueue.h"
 
 namespace Aion
 {
@@ -22,6 +26,9 @@ namespace Aion
         void OnResize(uint32_t width, uint32_t height);
 
     private:
-        void RenderObject(Object3D* object, CameraComponent* camera);
+        void SubmitObject(Object3D* object, CameraComponent* camera);
+        void ExecuteCommands(const std::vector<DrawCommand>& commands, CameraComponent* camera);
+
+        RenderQueue m_RenderQueue;
     };
 } // namespace Aion

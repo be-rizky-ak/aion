@@ -2,16 +2,27 @@
 
 namespace Aion
 {
-    MeshRenderer::MeshRenderer(Mesh* mesh, Material* material) : m_mesh(mesh), m_material(material)
+    MeshRenderer::MeshRenderer(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material)
+        : m_mesh(std::move(mesh)), m_material(std::move(material))
     {
     }
 
-    Mesh* MeshRenderer::GetMesh() const
+    void MeshRenderer::SetMesh(std::shared_ptr<Mesh> mesh)
+    {
+        m_mesh = std::move(mesh);
+    }
+
+    std::shared_ptr<Mesh> MeshRenderer::GetMesh() const
     {
         return m_mesh;
     }
 
-    Material* MeshRenderer::GetMaterial() const
+    void MeshRenderer::SetMaterial(std::shared_ptr<Material> material)
+    {
+        m_material = std::move(material);
+    }
+
+    std::shared_ptr<Material> MeshRenderer::GetMaterial() const
     {
         return m_material;
     }

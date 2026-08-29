@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -15,13 +16,13 @@ namespace Aion
     {
     public:
         Scene();
-        ~Scene();
+        ~Scene() = default;
 
-        void Add(Object3D* object);
-        void RemoveRoot(Object3D* object);
-        void AddRoot(Object3D* object);
+        void Add(std::shared_ptr<Object3D> object);
+        void RemoveRoot(const std::shared_ptr<Object3D>& object);
+        void AddRoot(std::shared_ptr<Object3D> object);
 
-        Object3D* GetObjectByUUID(UUID uuid);
+        std::shared_ptr<Object3D> GetObjectByUUID(UUID uuid);
 
         void SetActiveCamera(CameraComponent* camera);
         CameraComponent* GetActiveCamera() const;
@@ -31,11 +32,11 @@ namespace Aion
 
         void OnEvent(Event& event);
 
-        const std::vector<Object3D*>& GetObjects() const;
+        const std::vector<std::shared_ptr<Object3D>>& GetObjects() const;
 
     private:
-        std::vector<Object3D*> m_objects;
-        std::unordered_map<UUID, Object3D*> m_objectMap;
+        std::vector<std::shared_ptr<Object3D>> m_objects;
+        std::unordered_map<UUID, std::shared_ptr<Object3D>> m_objectMap;
         CameraComponent* m_activeCamera;
 
         bool m_started;

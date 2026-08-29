@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 namespace Aion
@@ -9,6 +10,6 @@ namespace Aion
     class ModelImporter
     {
     public:
-        static Object3D* Load(const std::string& path);
+        static std::shared_ptr<Object3D> Load(const std::string& path);
     };
 } // namespace Aion

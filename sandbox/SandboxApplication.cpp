@@ -31,51 +31,32 @@ SandboxApplication::~SandboxApplication() {}
 
 void SandboxApplication::OnCreate()
 {
-    m_CameraObject = new Aion::Object3D();
-    m_CameraComponent = m_CameraObject->AddComponent<Aion::CameraComponent>(
+    auto cameraObject = std::make_shared<Aion::Object3D>();
+    auto cameraComponent = cameraObject->AddComponent<Aion::CameraComponent>(
         std::make_unique<Aion::PerspectiveCamera>(45.0f, 1280.0f / 720.0f, 0.1f, 100.0f));
 
-    m_CameraObject->AddComponent<Aion::CameraControllerComponent>();
+    cameraObject->AddComponent<Aion::CameraControllerComponent>();
 
-    m_CameraObject->Transform.Position = Aion::Vector3(0.0f, 0.0f, 5.0f);
-    m_CameraObject->Transform.Rotation.y = 0.0f;
+    cameraObject->Transform.Position = Aion::Vector3(0.0f, 0.0f, 5.0f);
+    cameraObject->Transform.Rotation.y = 0.0f;
 
-    GetScene()->Add(m_CameraObject);
-    GetScene()->SetActiveCamera(m_CameraComponent);
+    GetScene()->Add(cameraObject);
+    GetScene()->SetActiveCamera(cameraComponent);
 
-    Aion::Object3D* helmetObject = Aion::ModelImporter::Load("assets/models/DamagedHelmet.glb");
+    auto helmetObject = Aion::ModelImporter::Load("assets/models/DamagedHelmet.glb");
     helmetObject->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
 
     GetScene()->Add(helmetObject);
 
-    // unsigned char pixels[] =
-    // {
-    //     255, 0, 0, 255,
-    //     0, 255, 0, 255,
-    //     0, 0, 255, 255,
-    //     255,255,0,255
-    // };
+    auto texture = std::make_shared<Aion::Texture>("assets/textures/checker.png");
 
-    // Texture* texture =
-    //     new Texture(
-    //         pixels,
-    //         2,
-    //         2,
-    //         4
-    //     );
-
-    Aion::Texture* texture = new Aion::Texture("assets/textures/checker.png");
-
-    Aion::Material* material = new Aion::Material();
-
+    auto material = std::make_shared<Aion::Material>();
     material->SetBaseColorTexture(texture);
 
-    Aion::Mesh* cubeMesh = Aion::MeshFactory::CreateCube();
+    std::shared_ptr<Aion::Mesh> cubeMesh(Aion::MeshFactory::CreateCube());
 
-    Aion::Object3D* cube = new Aion::Object3D();
-
+    auto cube = std::make_shared<Aion::Object3D>();
     cube->AddComponent<Aion::MeshRenderer>(cubeMesh, material);
-
     cube->AddComponent<Aion::RotatorComponent>();
     cube->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
 

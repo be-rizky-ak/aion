@@ -51,28 +51,16 @@ namespace Aion
         float speed = m_moveSpeed * deltaTime;
 
         if (m_forward)
-        {
             transform.Position += forward * speed;
-        }
-
         if (m_backward)
-        {
             transform.Position -= forward * speed;
-        }
-
         if (m_left)
-        {
             transform.Position -= right * speed;
-        }
-
         if (m_right)
-        {
             transform.Position += right * speed;
-        }
 
-        transform.Rotation.x = m_pitch;
-
-        transform.Rotation.y = m_yaw;
+        transform.Rotation.x = pitchRad;
+        transform.Rotation.y = yawRad;
     }
 
     void CameraControllerComponent::OnEvent(Event& event)

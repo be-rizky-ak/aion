@@ -1,11 +1,11 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "../Core/UUID.h"
 #include "CameraComponent.h"
-
 #include "Transform.h"
 
 namespace Aion
@@ -18,7 +18,7 @@ namespace Aion
     {
     public:
         Object3D();
-        virtual ~Object3D();
+        ~Object3D() = default;
 
         virtual void OnEvent(Event& event);
 
@@ -26,9 +26,8 @@ namespace Aion
 
         UUID GetUUID() const { return m_uuid; }
 
-        void AddChild(Object3D* child);
-        void RemoveChild(Object3D* child);
-        void SetParent(Object3D* parent);
+        Object3D* AddChild(std::unique_ptr<Object3D> child);
+        std::unique_ptr<Object3D> RemoveChild(Object3D* child);
 
         void Start();
         void Update(float deltaTime);
@@ -36,29 +35,29 @@ namespace Aion
         void SetScene(Scene* scene);
         Scene* GetScene() const { return m_scene; }
 
-        Object3D* GetParent() const;
-        const std::vector<Object3D*>& GetChildren() const;
+        Object3D* GetParent() const { return m_parent; }
+        const std::vector<std::unique_ptr<Object3D>>& GetChildren() const { return m_children; }
         Matrix4 GetWorldMatrix() const;
 
         template <typename T, typename... Args> T* AddComponent(Args&&... args)
         {
-            T* component = new T(std::forward<Args>(args)...);
+            static_assert(std::is_base_of_v<Component, T>, "T must derive from Component");
+
+            auto component = std::make_unique<T>(std::forward<Args>(args)...);
+            T* rawPtr = component.get();
 
             component->m_owner = this;
+            m_components.push_back(std::move(component));
+            rawPtr->OnCreate();
 
-            m_components.push_back(component);
-
-            component->OnCreate();
-
-            return component;
+            return rawPtr;
         }
 
         template <typename T> T* GetComponent() const
         {
-            for (Component* component : m_components)
+            for (const auto& component : m_components)
             {
-                T* result = dynamic_cast<T*>(component);
-
+                T* result = dynamic_cast<T*>(component.get());
                 if (result)
                 {
                     return result;
@@ -70,9 +69,9 @@ namespace Aion
 
     private:
         UUID m_uuid;
-        Scene* m_scene;
-        Object3D* m_parent;
-        std::vector<Object3D*> m_children;
-        std::vector<Component*> m_components;
+        Scene* m_scene = nullptr;
+        Object3D* m_parent = nullptr; // Non-owning raw pointer
+        std::vector<std::unique_ptr<Object3D>> m_children;
+        std::vector<std::unique_ptr<Component>> m_components;
     };
 } // namespace Aion

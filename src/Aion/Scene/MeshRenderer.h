@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Component.h"
 
 namespace Aion
@@ -10,13 +12,18 @@ namespace Aion
     class MeshRenderer : public Component
     {
     public:
-        MeshRenderer(Mesh* mesh, Material* material);
+        MeshRenderer(
+            std::shared_ptr<Mesh> mesh = nullptr, std::shared_ptr<Material> material = nullptr);
+        virtual ~MeshRenderer() override = default;
 
-        Mesh* GetMesh() const;
-        Material* GetMaterial() const;
+        void SetMesh(std::shared_ptr<Mesh> mesh);
+        std::shared_ptr<Mesh> GetMesh() const;
+
+        void SetMaterial(std::shared_ptr<Material> material);
+        std::shared_ptr<Material> GetMaterial() const;
 
     private:
-        Mesh* m_mesh;
-        Material* m_material;
+        std::shared_ptr<Mesh> m_mesh;
+        std::shared_ptr<Material> m_material;
     };
 } // namespace Aion

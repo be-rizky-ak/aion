@@ -6,21 +6,22 @@
 
 #include <iostream>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <tiny_gltf.h>
 
-#include "Mesh.h"
+#include "Aion/Math/Matrix4.h"
+#include "Aion/Math/Quaternion.h"
+#include "Aion/Math/Vector2.h"
+#include "Aion/Math/Vector3.h"
+#include "Aion/Math/Vector4.h"
 
-#include "../Renderer/Material.h"
-#include "../Renderer/Texture.h"
+#include "Aion/Renderer/Material.h"
+#include "Aion/Renderer/Texture.h"
+#include "Mesh.h"
 
 namespace Aion
 {
-    static Texture* GetTextureFromGLTF(
-        int textureIndex, const tinygltf::Model& gltfModel, const std::vector<Texture*>& textures)
+    static std::shared_ptr<Texture> GetTextureFromGLTF(int textureIndex,
+        const tinygltf::Model& gltfModel, const std::vector<std::shared_ptr<Texture>>& textures)
     {
         if (textureIndex < 0)
         {
@@ -30,7 +31,7 @@ namespace Aion
         const tinygltf::Texture& gltfTexture = gltfModel.textures[textureIndex];
         int imageIndex = gltfTexture.source;
 
-        if (imageIndex < 0 || imageIndex >= (int)textures.size())
+        if (imageIndex < 0 || imageIndex >= static_cast<int>(textures.size()))
         {
             return nullptr;
         }
@@ -38,48 +39,94 @@ namespace Aion
         return textures[imageIndex];
     }
 
-    static glm::mat4 GetNodeMatrix(const tinygltf::Node& node)
+    static Matrix4 GetNodeMatrix(const tinygltf::Node& node)
     {
         if (node.matrix.size() == 16)
         {
-            return glm::make_mat4(node.matrix.data());
+            Matrix4 mat;
+            for (int col = 0; col < 4; ++col)
+            {
+                mat[col] = Vector4(static_cast<float>(node.matrix[col * 4 + 0]),
+                    static_cast<float>(node.matrix[col * 4 + 1]),
+                    static_cast<float>(node.matrix[col * 4 + 2]),
+                    static_cast<float>(node.matrix[col * 4 + 3]));
+            }
+            return mat;
         }
 
-        glm::vec3 translation(0.0f);
+        Vector3 translation(0.0f);
         if (node.translation.size() == 3)
         {
-            translation = glm::vec3(node.translation[0], node.translation[1], node.translation[2]);
+            translation = Vector3(static_cast<float>(node.translation[0]),
+                static_cast<float>(node.translation[1]), static_cast<float>(node.translation[2]));
         }
 
-        glm::quat rotation(1.0f, 0.0f, 0.0f, 0.0f); // w, x, y, z
+        Quaternion rotation = Quaternion::Identity();
         if (node.rotation.size() == 4)
         {
-            rotation = glm::quat((float)node.rotation[3], (float)node.rotation[0],
-                (float)node.rotation[1], (float)node.rotation[2]);
+            // tinygltf stores quaternions as [x, y, z, w]
+            rotation = Quaternion(static_cast<float>(node.rotation[0]),
+                static_cast<float>(node.rotation[1]), static_cast<float>(node.rotation[2]),
+                static_cast<float>(node.rotation[3]));
         }
 
-        glm::vec3 scale(1.0f);
+        Vector3 scale(1.0f);
         if (node.scale.size() == 3)
         {
-            scale = glm::vec3(node.scale[0], node.scale[1], node.scale[2]);
+            scale = Vector3(static_cast<float>(node.scale[0]), static_cast<float>(node.scale[1]),
+                static_cast<float>(node.scale[2]));
         }
 
-        return glm::translate(glm::mat4(1.0f), translation) * glm::mat4_cast(rotation) *
-               glm::scale(glm::mat4(1.0f), scale);
+        return Matrix4::Translate(translation) * Matrix4::Rotate(rotation) * Matrix4::Scale(scale);
     }
 
-    static void ProcessGLTFNode(const tinygltf::Model& gltfModel, int nodeIndex,
-        const glm::mat4& parentTransform, const std::vector<Material*>& materials,
-        std::vector<ModelPrimitive>& outPrimitives)
+    static std::shared_ptr<ModelNode> ProcessGLTFNode(const tinygltf::Model& gltfModel,
+        int nodeIndex, const std::vector<std::shared_ptr<Material>>& materials)
     {
-        const tinygltf::Node& node = gltfModel.nodes[nodeIndex];
-        glm::mat4 localTransform = GetNodeMatrix(node);
-        glm::mat4 worldTransform = parentTransform * localTransform;
-        glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(worldTransform)));
+        const tinygltf::Node& gltfNode = gltfModel.nodes[nodeIndex];
+        auto modelNode = std::make_shared<ModelNode>();
+        modelNode->Name = gltfNode.name;
 
-        if (node.mesh >= 0 && node.mesh < (int)gltfModel.meshes.size())
+        if (gltfNode.matrix.size() == 16)
         {
-            const tinygltf::Mesh& gltfMesh = gltfModel.meshes[node.mesh];
+            for (int col = 0; col < 4; ++col)
+            {
+                modelNode->LocalMatrix[col] =
+                    Vector4(static_cast<float>(gltfNode.matrix[col * 4 + 0]),
+                        static_cast<float>(gltfNode.matrix[col * 4 + 1]),
+                        static_cast<float>(gltfNode.matrix[col * 4 + 2]),
+                        static_cast<float>(gltfNode.matrix[col * 4 + 3]));
+            }
+        }
+        else
+        {
+            if (gltfNode.translation.size() == 3)
+            {
+                modelNode->Translation = Vector3(static_cast<float>(gltfNode.translation[0]),
+                    static_cast<float>(gltfNode.translation[1]),
+                    static_cast<float>(gltfNode.translation[2]));
+            }
+            if (gltfNode.rotation.size() == 4)
+            {
+                modelNode->Rotation = Quaternion(static_cast<float>(gltfNode.rotation[0]),
+                    static_cast<float>(gltfNode.rotation[1]),
+                    static_cast<float>(gltfNode.rotation[2]),
+                    static_cast<float>(gltfNode.rotation[3]));
+            }
+            if (gltfNode.scale.size() == 3)
+            {
+                modelNode->Scale = Vector3(static_cast<float>(gltfNode.scale[0]),
+                    static_cast<float>(gltfNode.scale[1]), static_cast<float>(gltfNode.scale[2]));
+            }
+
+            modelNode->LocalMatrix = Matrix4::Translate(modelNode->Translation) *
+                                     Matrix4::Rotate(modelNode->Rotation) *
+                                     Matrix4::Scale(modelNode->Scale);
+        }
+
+        if (gltfNode.mesh >= 0 && gltfNode.mesh < static_cast<int>(gltfModel.meshes.size()))
+        {
+            const tinygltf::Mesh& gltfMesh = gltfModel.meshes[gltfNode.mesh];
 
             for (const tinygltf::Primitive& primitive : gltfMesh.primitives)
             {
@@ -99,7 +146,7 @@ namespace Aion
                     const tinygltf::BufferView& view = gltfModel.bufferViews[accessor.bufferView];
                     positionBuffer = reinterpret_cast<const float*>(&gltfModel.buffers[view.buffer]
                             .data[accessor.byteOffset + view.byteOffset]);
-                    vertexCount = (int)accessor.count;
+                    vertexCount = static_cast<int>(accessor.count);
                 }
 
                 // NORMAL
@@ -122,28 +169,27 @@ namespace Aion
                             .data[accessor.byteOffset + view.byteOffset]);
                 }
 
-                // VERTICES (Apply node transformation matrix to position & normal)
+                vertices.reserve(vertexCount);
                 for (int i = 0; i < vertexCount; i++)
                 {
                     Vertex vertex;
 
-                    glm::vec4 rawPos(positionBuffer[i * 3 + 0], positionBuffer[i * 3 + 1],
-                        positionBuffer[i * 3 + 2], 1.0f);
-                    vertex.Position = glm::vec3(worldTransform * rawPos);
+                    vertex.Position = Vector3(positionBuffer[i * 3 + 0], positionBuffer[i * 3 + 1],
+                        positionBuffer[i * 3 + 2]);
 
                     if (normalBuffer)
                     {
-                        glm::vec3 rawNormal(normalBuffer[i * 3 + 0], normalBuffer[i * 3 + 1],
-                            normalBuffer[i * 3 + 2]);
-                        vertex.Normal = glm::normalize(normalMatrix * rawNormal);
+                        vertex.Normal = Vector3(normalBuffer[i * 3 + 0], normalBuffer[i * 3 + 1],
+                            normalBuffer[i * 3 + 2])
+                                            .Normalized();
                     }
                     else
                     {
-                        vertex.Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+                        vertex.Normal = Vector3(0.0f, 1.0f, 0.0f);
                     }
 
-                    vertex.UV = uvBuffer ? glm::vec2(uvBuffer[i * 2 + 0], uvBuffer[i * 2 + 1])
-                                         : glm::vec2(0.0f);
+                    vertex.UV = uvBuffer ? Vector2(uvBuffer[i * 2 + 0], uvBuffer[i * 2 + 1])
+                                         : Vector2(0.0f);
 
                     vertices.push_back(vertex);
                 }
@@ -156,67 +202,60 @@ namespace Aion
                     const unsigned char* data =
                         &gltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset];
 
+                    indices.reserve(accessor.count);
                     for (size_t i = 0; i < accessor.count; i++)
                     {
                         uint32_t index = 0;
                         switch (accessor.componentType)
                         {
                         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-                            index = ((uint8_t*)data)[i];
+                            index = reinterpret_cast<const uint8_t*>(data)[i];
                             break;
                         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-                            index = ((uint16_t*)data)[i];
+                            index = reinterpret_cast<const uint16_t*>(data)[i];
                             break;
                         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-                            index = ((uint32_t*)data)[i];
+                            index = reinterpret_cast<const uint32_t*>(data)[i];
                             break;
                         }
                         indices.push_back(index);
                     }
                 }
 
-                Mesh* mesh = new Mesh(vertices, indices);
-                Material* material = nullptr;
-                if (primitive.material >= 0 && primitive.material < (int)materials.size())
+                auto mesh = std::make_shared<Mesh>(vertices, indices);
+                std::shared_ptr<Material> material = nullptr;
+
+                if (primitive.material >= 0 &&
+                    primitive.material < static_cast<int>(materials.size()))
                 {
                     material = materials[primitive.material];
                 }
 
                 ModelPrimitive modelPrimitive;
-                modelPrimitive.Mesh = mesh;
-                modelPrimitive.Material = material;
-                modelPrimitive.NodeIndex = nodeIndex;
-
-                outPrimitives.push_back(modelPrimitive);
+                modelPrimitive.MeshPtr = mesh;
+                modelPrimitive.MaterialPtr = material;
+                modelNode->Primitives.push_back(modelPrimitive);
             }
         }
 
-        for (int childIndex : node.children)
+        for (int childIndex : gltfNode.children)
         {
-            ProcessGLTFNode(gltfModel, childIndex, worldTransform, materials, outPrimitives);
+            modelNode->Children.push_back(ProcessGLTFNode(gltfModel, childIndex, materials));
         }
+
+        return modelNode;
     }
 
     Model::Model(const std::string& path)
     {
         tinygltf::TinyGLTF loader;
         tinygltf::Model gltfModel;
-
         std::string error;
         std::string warning;
 
-        bool result = false;
-
         bool isBinary = path.length() >= 4 && path.substr(path.length() - 4) == ".glb";
-
-        if (isBinary)
-        {
-            result = loader.LoadBinaryFromFile(&gltfModel, &error, &warning, path);
-        }
-        else
-        {
-            result = loader.LoadASCIIFromFile(&gltfModel, &error, &warning, path);
-        }
+        bool result = isBinary ? loader.LoadBinaryFromFile(&gltfModel, &error, &warning, path)
+                               : loader.LoadASCIIFromFile(&gltfModel, &error, &warning, path);
 
         if (!warning.empty())
         {
@@ -231,41 +270,54 @@ namespace Aion
         if (!result)
         {
             std::cout << "Failed to load GLTF: " << path << std::endl;
-
             return;
         }
 
         std::cout << "Loaded GLTF: " << path << std::endl;
 
-        // ==========================================
-        // TEXTURES
-        // ==========================================
-
+        // Load Textures
         for (const auto& image : gltfModel.images)
         {
-            Texture* texture = new Texture(const_cast<unsigned char*>(image.image.data()),
-                image.width, image.height, image.component);
+            TextureSpecification spec;
+            spec.Width = image.width;
+            spec.Height = image.height;
 
+            switch (image.component)
+            {
+            case 1:
+                spec.Format = TextureFormat::R8;
+                break;
+            case 3:
+                spec.Format = TextureFormat::RGB8;
+                break;
+            case 4:
+                spec.Format = TextureFormat::RGBA8;
+                break;
+            default:
+                spec.Format = TextureFormat::RGBA8;
+                break;
+            }
+
+            auto texture = std::make_shared<Texture>(spec, image.image.data());
             m_textures.push_back(texture);
         }
 
-        // ==========================================
-        // MATERIALS
-        // ==========================================
+        // Load Materials
         for (const auto& gltfMaterial : gltfModel.materials)
         {
-            Material* material = new Material();
+            auto material = std::make_shared<Material>();
             const auto& pbr = gltfMaterial.pbrMetallicRoughness;
 
             if (pbr.baseColorFactor.size() == 4)
             {
-                material->BaseColor =
-                    glm::vec4((float)pbr.baseColorFactor[0], (float)pbr.baseColorFactor[1],
-                        (float)pbr.baseColorFactor[2], (float)pbr.baseColorFactor[3]);
+                material->BaseColor = Vector4(static_cast<float>(pbr.baseColorFactor[0]),
+                    static_cast<float>(pbr.baseColorFactor[1]),
+                    static_cast<float>(pbr.baseColorFactor[2]),
+                    static_cast<float>(pbr.baseColorFactor[3]));
             }
 
-            material->MetallicFactor = (float)pbr.metallicFactor;
-            material->RoughnessFactor = (float)pbr.roughnessFactor;
+            material->MetallicFactor = static_cast<float>(pbr.metallicFactor);
+            material->RoughnessFactor = static_cast<float>(pbr.roughnessFactor);
 
             material->SetBaseColorTexture(
                 GetTextureFromGLTF(pbr.baseColorTexture.index, gltfModel, m_textures));
@@ -278,11 +330,13 @@ namespace Aion
 
             if (gltfMaterial.emissiveFactor.size() == 3)
             {
-                material->EmissiveFactor = glm::vec3((float)gltfMaterial.emissiveFactor[0],
-                    (float)gltfMaterial.emissiveFactor[1], (float)gltfMaterial.emissiveFactor[2]);
+                material->EmissiveFactor =
+                    Vector3(static_cast<float>(gltfMaterial.emissiveFactor[0]),
+                        static_cast<float>(gltfMaterial.emissiveFactor[1]),
+                        static_cast<float>(gltfMaterial.emissiveFactor[2]));
             }
 
-            material->AlphaCutoff = (float)gltfMaterial.alphaCutoff;
+            material->AlphaCutoff = static_cast<float>(gltfMaterial.alphaCutoff);
             material->DoubleSided = gltfMaterial.doubleSided;
 
             if (gltfMaterial.alphaMode == "BLEND")
@@ -298,22 +352,10 @@ namespace Aion
                 material->AlphaModeType = AlphaMode::Opaque;
             }
 
-            std::cout << "Material Loaded\n"
-                      << "  BaseColorTexture: " << (material->GetBaseColorTexture() ? "Yes" : "No")
-                      << "\n"
-                      << "  NormalTexture: " << (material->GetNormalTexture() ? "Yes" : "No")
-                      << "\n"
-                      << "  MetallicRoughnessTexture: "
-                      << (material->GetMetallicRoughnessTexture() ? "Yes" : "No") << "\n"
-                      << "  EmissiveTexture: " << (material->GetEmissiveTexture() ? "Yes" : "No")
-                      << "\n";
-
             m_materials.push_back(material);
         }
 
-        // ==========================================
-        // MESHES (SCENE NODE TRAVERSAL)
-        // ==========================================
+        // Scene Node Traversal
         if (!gltfModel.scenes.empty())
         {
             int sceneIndex = gltfModel.defaultScene >= 0 ? gltfModel.defaultScene : 0;
@@ -321,36 +363,8 @@ namespace Aion
 
             for (int nodeIndex : scene.nodes)
             {
-                ProcessGLTFNode(gltfModel, nodeIndex, glm::mat4(1.0f), m_materials, m_primitives);
+                m_rootNodes.push_back(ProcessGLTFNode(gltfModel, nodeIndex, m_materials));
             }
         }
-    }
-
-    Model::~Model()
-    {
-        for (auto& primitive : m_primitives)
-        {
-            delete primitive.Mesh;
-        }
-
-        for (Material* material : m_materials)
-        {
-            delete material;
-        }
-
-        for (Texture* texture : m_textures)
-        {
-            delete texture;
-        }
-    }
-
-    const std::vector<Texture*>& Model::GetTextures() const
-    {
-        return m_textures;
-    }
-
-    const std::vector<ModelPrimitive>& Model::GetPrimitives() const
-    {
-        return m_primitives;
     }
 } // namespace Aion

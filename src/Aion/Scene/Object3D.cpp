@@ -9,87 +9,52 @@ namespace Aion
 {
     Object3D::Object3D() : m_uuid(), m_scene(nullptr), m_parent(nullptr) {}
 
-    Object3D::~Object3D()
-    {
-        for (Component* component : m_components)
-        {
-            component->OnDestroy();
-            delete component;
-        }
-
-        for (Object3D* child : m_children)
-        {
-            delete child;
-        }
-    }
-
     void Object3D::SetScene(Scene* scene)
     {
         m_scene = scene;
-        for (Object3D* child : m_children)
+        for (auto& child : m_children)
         {
             child->SetScene(scene);
         }
     }
 
-    void Object3D::AddChild(Object3D* child)
+    Object3D* Object3D::AddChild(std::unique_ptr<Object3D> child)
     {
         if (!child)
-            return;
-        child->SetParent(this);
+            return nullptr;
+
+        Object3D* rawChild = child.get();
+        rawChild->m_parent = this;
+        rawChild->SetScene(m_scene);
+
+        m_children.push_back(std::move(child));
+        return rawChild;
     }
 
-    void Object3D::RemoveChild(Object3D* child)
+    std::unique_ptr<Object3D> Object3D::RemoveChild(Object3D* child)
     {
-        if (!child || child->GetParent() != this)
-            return;
-        child->SetParent(nullptr);
-    }
+        if (!child || child->m_parent != this)
+            return nullptr;
 
-    void Object3D::SetParent(Object3D* parent)
-    {
-        if (m_parent == parent)
+        auto it = std::find_if(m_children.begin(), m_children.end(),
+            [child](const std::unique_ptr<Object3D>& ptr) { return ptr.get() == child; });
+
+        if (it != m_children.end())
         {
-            return;
+            std::unique_ptr<Object3D> movedChild = std::move(*it);
+            m_children.erase(it);
+
+            movedChild->m_parent = nullptr;
+            movedChild->SetScene(nullptr);
+            return movedChild;
         }
 
-        if (m_parent)
-        {
-            auto& siblings = m_parent->m_children;
-            siblings.erase(std::remove(siblings.begin(), siblings.end(), this), siblings.end());
-        }
-        else if (m_scene)
-        {
-            m_scene->RemoveRoot(this);
-        }
-
-        m_parent = parent;
-
-        if (m_parent)
-        {
-            m_parent->m_children.push_back(this);
-            SetScene(m_parent->GetScene());
-        }
-        else if (m_scene)
-        {
-            m_scene->AddRoot(this);
-        }
-    }
-
-    Object3D* Object3D::GetParent() const
-    {
-        return m_parent;
-    }
-
-    const std::vector<Object3D*>& Object3D::GetChildren() const
-    {
-        return m_children;
+        return nullptr;
     }
 
     Matrix4 Object3D::GetWorldMatrix() const
     {
         Matrix4 local = Transform.GetMatrix();
-
         if (!m_parent)
         {
             return local;
@@ -100,7 +65,7 @@ namespace Aion
 
     void Object3D::Start()
     {
-        for (Component* component : m_components)
+        for (auto& component : m_components)
         {
             if (!component->m_started)
             {
@@ -109,7 +74,7 @@ namespace Aion
             }
         }
 
-        for (Object3D* child : m_children)
+        for (auto& child : m_children)
         {
             child->Start();
         }
@@ -117,17 +82,15 @@ namespace Aion
 
     void Object3D::Update(float deltaTime)
     {
-        for (Component* component : m_components)
+        for (auto& component : m_components)
         {
-            if (!component->IsEnabled())
+            if (component->IsEnabled())
             {
-                continue;
+                component->OnUpdate(deltaTime);
             }
-
-            component->OnUpdate(deltaTime);
         }
 
-        for (Object3D* child : m_children)
+        for (auto& child : m_children)
         {
             child->Update(deltaTime);
         }
@@ -135,12 +98,12 @@ namespace Aion
 
     void Object3D::OnEvent(Event& event)
     {
-        for (Component* component : m_components)
+        for (auto& component : m_components)
         {
             component->OnEvent(event);
         }
 
-        for (Object3D* child : m_children)
+        for (auto& child : m_children)
         {
             child->OnEvent(event);
         }

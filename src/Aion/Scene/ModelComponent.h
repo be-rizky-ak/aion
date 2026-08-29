@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Component.h"
 
 namespace Aion
@@ -9,11 +11,9 @@ namespace Aion
     class ModelComponent : public Component
     {
     public:
-        ModelComponent(Model* model) : m_model(model) {}
-
-        ~ModelComponent() { delete m_model; }
+        ModelComponent(std::shared_ptr<Model> model) : m_Model(model) {}
 
     private:
-        Model* m_model;
+        std::shared_ptr<Model> m_Model;
     };
 } // namespace Aion

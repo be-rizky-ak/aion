@@ -18,6 +18,7 @@ namespace Aion
 
         Matrix4 GetViewMatrix() const;
         Matrix4 GetProjectionMatrix() const;
+        Vector3 GetPosition() const;
 
     private:
         std::unique_ptr<Camera> m_camera;

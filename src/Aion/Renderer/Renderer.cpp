@@ -2,10 +2,7 @@
 
 #include <glad/glad.h>
 
-#include <iostream>
-
 #include "../Assets/Mesh.h"
-
 #include "../Scene/Camera.h"
 #include "../Scene/CameraComponent.h"
 #include "../Scene/MeshRenderer.h"
@@ -36,21 +33,31 @@ namespace Aion
     void Renderer::Render(Scene* scene)
     {
         CameraComponent* camera = scene->GetActiveCamera();
-
         if (!camera)
         {
             return;
         }
+
         glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        for (Object3D* root : scene->GetObjects())
+        m_RenderQueue.Clear();
+
+        for (const auto& root : scene->GetObjects())
         {
-            RenderObject(root, camera);
+            if (root)
+            {
+                SubmitObject(root.get(), camera);
+            }
         }
+
+        m_RenderQueue.Sort();
+
+        ExecuteCommands(m_RenderQueue.GetOpaqueQueue(), camera);
+        ExecuteCommands(m_RenderQueue.GetTransparentQueue(), camera);
     }
 
-    void Renderer::RenderObject(Object3D* object, CameraComponent* camera)
+    void Renderer::SubmitObject(Object3D* object, CameraComponent* camera)
     {
         if (!object)
         {
@@ -58,41 +65,69 @@ namespace Aion
         }
 
         MeshRenderer* meshRenderer = object->GetComponent<MeshRenderer>();
-
-        if (meshRenderer)
+        if (meshRenderer && meshRenderer->GetMesh())
         {
-            Material* material = meshRenderer->GetMaterial();
+            Matrix4 model = object->GetWorldMatrix();
+            Vector4 modelVec = model[3];
 
-            Mesh* mesh = meshRenderer->GetMesh();
+            Vector3 objectPos = Vector3(modelVec.x, modelVec.y, modelVec.z);
+            Vector3 cameraPos = camera->GetPosition();
+            float distance = (cameraPos - objectPos).Length();
 
-            if (mesh)
-            {
-                glm::mat4 model = object->GetWorldMatrix();
-                glm::mat4 mvp = camera->GetProjectionMatrix() * camera->GetViewMatrix() * model;
-
-                std::shared_ptr<Shader> shader = (material && material->GetShader())
-                                                     ? material->GetShader()
-                                                     : ShaderLibrary::GetDefault();
-
-                if (shader)
-                {
-                    shader->Use();
-                    shader->SetMat4("u_MVP", mvp);
-
-                    if (material)
-                    {
-                        RenderCommand::ApplyState(material->State);
-                        material->Bind();
-                    }
-
-                    mesh->Draw();
-                }
-            }
+            m_RenderQueue.Submit(
+                meshRenderer->GetMesh(), meshRenderer->GetMaterial(), model, distance);
         }
 
-        for (Object3D* child : object->GetChildren())
+        for (const auto& child : object->GetChildren())
         {
-            RenderObject(child, camera);
+            SubmitObject(child.get(), camera);
+        }
+    }
+
+    void Renderer::ExecuteCommands(
+        const std::vector<DrawCommand>& commands, CameraComponent* camera)
+    {
+        if (!camera)
+        {
+            return;
+        }
+
+        Matrix4 viewProj = camera->GetProjectionMatrix() * camera->GetViewMatrix();
+
+        for (const auto& cmd : commands)
+        {
+            if (!cmd.MeshPtr)
+            {
+                continue;
+            }
+
+            Shader* shader = nullptr;
+
+            if (cmd.MaterialPtr && cmd.MaterialPtr->GetShader())
+            {
+                shader = cmd.MaterialPtr->GetShader().get();
+            }
+            else
+            {
+                const auto& defaultShader = ShaderLibrary::GetDefault();
+                shader = defaultShader ? defaultShader.get() : nullptr;
+            }
+
+            if (shader)
+            {
+                Matrix4 mvp = viewProj * cmd.Transform;
+
+                shader->Use();
+                shader->SetMat4("u_MVP", mvp);
+
+                if (cmd.MaterialPtr)
+                {
+                    Aion::RenderCommand::ApplyState(cmd.MaterialPtr->State);
+                    cmd.MaterialPtr->Bind();
+                }
+
+                cmd.MeshPtr->Draw();
+            }
         }
     }
 

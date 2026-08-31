@@ -76,5 +76,15 @@ namespace Aion
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 
+    inline float Lerp(float a, float b, float t)
+    {
+        return a + (b - a) * t;
+    }
+
+    inline Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
+    {
+        return {a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t};
+    }
+
     using Vec3 = Vector3;
 } // namespace Aion

@@ -25,10 +25,14 @@ target_include_directories(glad PUBLIC
 
 file(GLOB_RECURSE AION_SOURCES
     src/Aion/*.cpp
+    src/aion/*.cpp
 )
 
 file(GLOB_RECURSE AION_HEADERS
     src/Aion/*.h
+    src/Aion/*.hpp
+    src/aion/*.h
+    src/aion/*.hpp
 )
 
 add_library(AionEngine
@@ -71,10 +75,12 @@ target_link_libraries(
 # ==================================================
 
 file(GLOB_RECURSE SANDBOX_SOURCES
+    sandbox/*.cpp
     Sandbox/*.cpp
 )
 
 file(GLOB_RECURSE SANDBOX_HEADERS
+    sandbox/*.h
     Sandbox/*.h
 )
 
@@ -83,7 +89,7 @@ add_executable(Sandbox
     ${SANDBOX_HEADERS}
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Sandbox
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/sandbox
     FILES
         ${SANDBOX_SOURCES}
         ${SANDBOX_HEADERS}
@@ -115,4 +121,18 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     "${CMAKE_SOURCE_DIR}/assets"
     "$<TARGET_FILE_DIR:Sandbox>/assets"
+)
+
+# ==================================================
+# Unit Tests
+# ==================================================
+
+add_executable(aion_tests
+    tests/test_traits.cpp
+)
+
+target_link_libraries(
+    aion_tests
+    PRIVATE
+    AionEngine
 )

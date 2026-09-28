@@ -23,7 +23,7 @@ namespace Aion
 
         virtual void OnEvent(Event& event);
 
-        Transform Transform;
+        Aion::Transform Transform;
 
         UUID GetUUID() const { return m_uuid; }
 

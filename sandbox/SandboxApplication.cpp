@@ -1,6 +1,11 @@
 #include "SandboxApplication.h"
 
+#include <cstring>
 #include <iostream>
+#include <vector>
+
+#include <glad/glad.h>
+#include <stb_image_write.h>
 
 #include "Aion/Core/Input.h"
 #include "Aion/Core/KeyCodes.h"
@@ -25,6 +30,18 @@
 
 #include "Aion/Importers/ModelImporter.h"
 
+static void SaveScreenshot(const char* filename, int width, int height)
+{
+    std::vector<unsigned char> pixels(width * height * 4);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+    std::vector<unsigned char> flipped(width * height * 4);
+    for (int y = 0; y < height; ++y)
+    {
+        memcpy(&flipped[(height - 1 - y) * width * 4], &pixels[y * width * 4], width * 4);
+    }
+    stbi_write_png(filename, width, height, 4, flipped.data(), width * 4);
+}
+
 SandboxApplication::SandboxApplication() : Aion::Application({"Aion Sandbox", 1280, 720, true}) {}
 
 SandboxApplication::~SandboxApplication() {}
@@ -43,28 +60,9 @@ void SandboxApplication::OnCreate()
     GetScene()->Add(cameraObject);
     GetScene()->SetActiveCamera(cameraComponent);
 
-    // auto helmetObject = Aion::ModelImporter::Load("assets/models/DamagedHelmet.glb");
-    // helmetObject->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
-
-    // GetScene()->Add(helmetObject);
-
     auto bird = Aion::ModelImporter::Load("assets/models/bird_orange.glb");
     bird->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
     GetScene()->Add(bird);
-
-    // auto texture = std::make_shared<Aion::Texture>("assets/textures/checker.png");
-
-    // auto material = std::make_shared<Aion::Material>();
-    // material->SetBaseColorTexture(texture);
-
-    // std::shared_ptr<Aion::Mesh> cubeMesh(Aion::MeshFactory::CreateCube());
-
-    // auto cube = std::make_shared<Aion::Object3D>();
-    // cube->AddComponent<Aion::MeshRenderer>(cubeMesh, material);
-    // cube->AddComponent<Aion::RotatorComponent>();
-    // cube->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
-
-    // GetScene()->Add(cube);
 }
 
 void SandboxApplication::OnUpdate()
@@ -76,4 +74,17 @@ void SandboxApplication::OnUpdate()
     }
 
     GetRenderer()->Render(GetScene());
+
+    static int frameCount = 0;
+    frameCount++;
+    if (frameCount == 10)
+    {
+        SaveScreenshot("/tmp/bird_anim_frame10.png", 1280, 720);
+        std::cout << "Saved screenshot: /tmp/bird_anim_frame10.png" << std::endl;
+    }
+    if (frameCount == 60)
+    {
+        SaveScreenshot("/tmp/bird_anim_frame60.png", 1280, 720);
+        std::cout << "Saved screenshot: /tmp/bird_anim_frame60.png" << std::endl;
+    }
 }

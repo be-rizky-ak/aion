@@ -125,4 +125,13 @@ namespace Aion
         GLint location = glGetUniformLocation(m_ID, name.c_str());
         glUniformMatrix4fv(location, 1, GL_FALSE, matrix.ValuePtr());
     }
+
+    void Shader::SetMat4Array(const std::string& name, const std::vector<Matrix4>& matrices)
+    {
+        GLint location = glGetUniformLocation(m_ID, name.c_str());
+        if (location != -1 && !matrices.empty())
+        {
+            glUniformMatrix4fv(location, static_cast<GLsizei>(matrices.size()), GL_FALSE, matrices[0].ValuePtr());
+        }
+    }
 } // namespace Aion

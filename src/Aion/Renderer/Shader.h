@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "Aion/Math/Matrix4.h"
 #include "Aion/Math/Vector2.h"
@@ -30,6 +31,7 @@ namespace Aion
         void SetVec3(const std::string& name, const Vector3& value);
         void SetVec4(const std::string& name, const Vector4& value);
         void SetMat4(const std::string& name, const Matrix4& matrix);
+        void SetMat4Array(const std::string& name, const std::vector<Matrix4>& matrices);
 
         unsigned int GetID() const { return m_ID; }
 

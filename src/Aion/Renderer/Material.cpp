@@ -126,11 +126,6 @@ namespace Aion
                 shader->SetInt(binding.UniformName, static_cast<int>(binding.Slot));
                 binding.TexturePtr->Bind(binding.Slot);
             }
-            else
-            {
-                shader->SetInt(binding.UniformName, static_cast<int>(binding.Slot));
-                TextureLibrary::GetWhiteTexture()->Bind(binding.Slot);
-            }
         }
     }
 

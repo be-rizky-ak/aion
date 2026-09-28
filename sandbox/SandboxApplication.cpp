@@ -43,22 +43,26 @@ void SandboxApplication::OnCreate()
     GetScene()->Add(cameraObject);
     GetScene()->SetActiveCamera(cameraComponent);
 
-    auto helmetObject = Aion::ModelImporter::Load("assets/models/DamagedHelmet.glb");
-    helmetObject->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
+    // auto helmetObject = Aion::ModelImporter::Load("assets/models/DamagedHelmet.glb");
+    // helmetObject->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
 
-    GetScene()->Add(helmetObject);
+    // GetScene()->Add(helmetObject);
 
-    auto texture = std::make_shared<Aion::Texture>("assets/textures/checker.png");
+    auto bird = Aion::ModelImporter::Load("assets/models/bird_orange.glb");
+    bird->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
+    GetScene()->Add(bird);
 
-    auto material = std::make_shared<Aion::Material>();
-    material->SetBaseColorTexture(texture);
+    // auto texture = std::make_shared<Aion::Texture>("assets/textures/checker.png");
 
-    std::shared_ptr<Aion::Mesh> cubeMesh(Aion::MeshFactory::CreateCube());
+    // auto material = std::make_shared<Aion::Material>();
+    // material->SetBaseColorTexture(texture);
 
-    auto cube = std::make_shared<Aion::Object3D>();
-    cube->AddComponent<Aion::MeshRenderer>(cubeMesh, material);
-    cube->AddComponent<Aion::RotatorComponent>();
-    cube->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
+    // std::shared_ptr<Aion::Mesh> cubeMesh(Aion::MeshFactory::CreateCube());
+
+    // auto cube = std::make_shared<Aion::Object3D>();
+    // cube->AddComponent<Aion::MeshRenderer>(cubeMesh, material);
+    // cube->AddComponent<Aion::RotatorComponent>();
+    // cube->Transform.Position = Aion::Vector3(0.0f, 0.0f, 0.0f);
 
     // GetScene()->Add(cube);
 }

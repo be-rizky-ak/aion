@@ -145,6 +145,7 @@ namespace Aion
     void Texture::CreateGLTexture(const void* data, int channels)
     {
         glGenTextures(1, &m_textureID);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glBindTexture(GL_TEXTURE_2D, m_textureID);
 
         GLenum internalFormat = TextureFormatToGLInternal(m_specification.Format);

@@ -1,6 +1,7 @@
 #include "ModelImporter.h"
 
 #include "Aion/Assets/Model.h"
+#include "Aion/Scene/AnimationComponent.h"
 #include "Aion/Scene/MeshRenderer.h"
 #include "Aion/Scene/ModelComponent.h"
 #include "Aion/Scene/Object3D.h"
@@ -52,6 +53,12 @@ namespace Aion
         }
 
         root->AddComponent<ModelComponent>(model);
+
+        if (!model->GetAnimations().empty())
+        {
+            root->AddComponent<AnimationComponent>(model);
+        }
+
         return root;
     }
 } // namespace Aion

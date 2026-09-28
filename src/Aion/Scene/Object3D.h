@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "../Core/UUID.h"
+#include "Aion/Core/UUID.h"
+#include "AnimationComponent.h"
 #include "CameraComponent.h"
 #include "Transform.h"
 

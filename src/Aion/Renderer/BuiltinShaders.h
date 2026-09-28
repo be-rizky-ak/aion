@@ -30,14 +30,26 @@ namespace Aion
             in vec2 v_UV;
 
             uniform sampler2D u_BaseColorTexture;
+            uniform sampler2D u_EmissiveTexture;
             uniform vec4 u_BaseColor;
+            uniform vec3 u_EmissiveFactor;
+            uniform float u_AlphaCutoff;
+            uniform int u_AlphaMode;
 
             out vec4 FragColor;
 
             void main()
             {
-                vec4 tex = texture(u_BaseColorTexture, v_UV);
-                FragColor = tex * u_BaseColor;
+                vec4 texColor = texture(u_BaseColorTexture, v_UV) * u_BaseColor;
+
+                if (u_AlphaMode == 1 && texColor.a < u_AlphaCutoff) {
+                    discard;
+                }
+
+                vec3 emissive = texture(u_EmissiveTexture, v_UV).rgb * u_EmissiveFactor;
+                vec3 finalColor = texColor.rgb + emissive;
+
+                FragColor = vec4(finalColor, texColor.a);
             }
         )";
 

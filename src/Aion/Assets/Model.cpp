@@ -342,10 +342,12 @@ namespace Aion
             if (gltfMaterial.alphaMode == "BLEND")
             {
                 material->AlphaModeType = AlphaMode::Blend;
+                material->SetTransparent(true);
             }
             else if (gltfMaterial.alphaMode == "MASK")
             {
                 material->AlphaModeType = AlphaMode::Mask;
+                material->SetFloat("u_AlphaCutoff", static_cast<float>(gltfMaterial.alphaCutoff));
             }
             else
             {
@@ -353,6 +355,114 @@ namespace Aion
             }
 
             m_materials.push_back(material);
+        }
+
+        // Parse Skins (Joints)
+        if (!gltfModel.skins.empty())
+        {
+            for (const auto& gltfSkin : gltfModel.skins)
+            {
+                for (size_t i = 0; i < gltfSkin.joints.size(); ++i)
+                {
+                    Joint joint;
+                    int jointNodeIdx = gltfSkin.joints[i];
+                    if (jointNodeIdx >= 0 &&
+                        jointNodeIdx < static_cast<int>(gltfModel.nodes.size()))
+                    {
+                        joint.Name = gltfModel.nodes[jointNodeIdx].name;
+                        // Find parent index (linear search, DOD-friendly for small joint counts)
+                        joint.ParentIndex = -1;
+                        for (size_t parentIdx = 0; parentIdx < gltfSkin.joints.size(); ++parentIdx)
+                        {
+                            const auto& parentNode = gltfModel.nodes[gltfSkin.joints[parentIdx]];
+                            for (int childIdx : parentNode.children)
+                            {
+                                if (childIdx == jointNodeIdx)
+                                {
+                                    joint.ParentIndex = static_cast<int>(parentIdx);
+                                    break;
+                                }
+                            }
+                        }
+                        // Inverse bind matrix
+                        if (gltfSkin.inverseBindMatrices >= 0)
+                        {
+                            const auto& accessor =
+                                gltfModel.accessors[gltfSkin.inverseBindMatrices];
+                            const auto& view = gltfModel.bufferViews[accessor.bufferView];
+                            const float* data =
+                                reinterpret_cast<const float*>(&gltfModel.buffers[view.buffer]
+                                        .data[accessor.byteOffset + view.byteOffset]);
+                            Matrix4 mat;
+                            for (int col = 0; col < 4; ++col)
+                            {
+                                mat[col] =
+                                    Vector4(data[i * 16 + col * 4 + 0], data[i * 16 + col * 4 + 1],
+                                        data[i * 16 + col * 4 + 2], data[i * 16 + col * 4 + 3]);
+                            }
+                            joint.InverseBindMatrix = mat;
+                        }
+                    }
+                    m_joints.push_back(joint);
+                }
+            }
+        }
+
+        // Parse Animations
+        if (!gltfModel.animations.empty())
+        {
+            for (const auto& gltfAnim : gltfModel.animations)
+            {
+                AnimationClip clip;
+                clip.Name = gltfAnim.name;
+                float maxTime = 0.0f;
+                for (const auto& channel : gltfAnim.channels)
+                {
+                    AnimationChannel animChannel;
+                    animChannel.JointIndex = channel.target_node;
+                    const auto& sampler = gltfAnim.samplers[channel.sampler];
+                    // Input (times)
+                    const auto& inputAccessor = gltfModel.accessors[sampler.input];
+                    const auto& inputView = gltfModel.bufferViews[inputAccessor.bufferView];
+                    const float* times =
+                        reinterpret_cast<const float*>(&gltfModel.buffers[inputView.buffer]
+                                .data[inputAccessor.byteOffset + inputView.byteOffset]);
+                    // Output (values)
+                    const auto& outputAccessor = gltfModel.accessors[sampler.output];
+                    const auto& outputView = gltfModel.bufferViews[outputAccessor.bufferView];
+                    const float* values =
+                        reinterpret_cast<const float*>(&gltfModel.buffers[outputView.buffer]
+                                .data[outputAccessor.byteOffset + outputView.byteOffset]);
+                    for (size_t k = 0; k < inputAccessor.count; ++k)
+                    {
+                        AnimationKeyframe keyframe;
+                        keyframe.Time = times[k];
+                        if (channel.target_path == "translation")
+                        {
+                            keyframe.Translation =
+                                Vector3(values[k * 3 + 0], values[k * 3 + 1], values[k * 3 + 2]);
+                        }
+                        else if (channel.target_path == "rotation")
+                        {
+                            keyframe.Rotation = Quaternion(values[k * 4 + 0], values[k * 4 + 1],
+                                values[k * 4 + 2], values[k * 4 + 3]);
+                        }
+                        else if (channel.target_path == "scale")
+                        {
+                            keyframe.Scale =
+                                Vector3(values[k * 3 + 0], values[k * 3 + 1], values[k * 3 + 2]);
+                        }
+                        animChannel.Keyframes.push_back(keyframe);
+                        if (keyframe.Time > maxTime)
+                        {
+                            maxTime = keyframe.Time;
+                        }
+                    }
+                    clip.Channels.push_back(animChannel);
+                }
+                clip.Duration = maxTime;
+                m_animations.push_back(clip);
+            }
         }
 
         // Scene Node Traversal

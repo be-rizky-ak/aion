@@ -169,6 +169,32 @@ namespace Aion
                             .data[accessor.byteOffset + view.byteOffset]);
                 }
 
+                // JOINTS_0
+                auto jointsIt = primitive.attributes.find("JOINTS_0");
+                const tinygltf::Accessor* jointsAccessor = nullptr;
+                const unsigned char* jointsBuffer = nullptr;
+                int jointsStride = 0;
+                if (jointsIt != primitive.attributes.end())
+                {
+                    jointsAccessor = &gltfModel.accessors[jointsIt->second];
+                    const tinygltf::BufferView& view = gltfModel.bufferViews[jointsAccessor->bufferView];
+                    jointsBuffer = &gltfModel.buffers[view.buffer].data[jointsAccessor->byteOffset + view.byteOffset];
+                    jointsStride = jointsAccessor->ByteStride(view);
+                }
+
+                // WEIGHTS_0
+                auto weightsIt = primitive.attributes.find("WEIGHTS_0");
+                const tinygltf::Accessor* weightsAccessor = nullptr;
+                const unsigned char* weightsBuffer = nullptr;
+                int weightsStride = 0;
+                if (weightsIt != primitive.attributes.end())
+                {
+                    weightsAccessor = &gltfModel.accessors[weightsIt->second];
+                    const tinygltf::BufferView& view = gltfModel.bufferViews[weightsAccessor->bufferView];
+                    weightsBuffer = &gltfModel.buffers[view.buffer].data[weightsAccessor->byteOffset + view.byteOffset];
+                    weightsStride = weightsAccessor->ByteStride(view);
+                }
+
                 vertices.reserve(vertexCount);
                 for (int i = 0; i < vertexCount; i++)
                 {
@@ -181,7 +207,7 @@ namespace Aion
                     {
                         vertex.Normal = Vector3(normalBuffer[i * 3 + 0], normalBuffer[i * 3 + 1],
                             normalBuffer[i * 3 + 2])
-                                            .Normalized();
+                                             .Normalized();
                     }
                     else
                     {
@@ -190,6 +216,71 @@ namespace Aion
 
                     vertex.UV = uvBuffer ? Vector2(uvBuffer[i * 2 + 0], uvBuffer[i * 2 + 1])
                                          : Vector2(0.0f);
+
+                    if (jointsAccessor && jointsBuffer)
+                    {
+                        const unsigned char* elem = jointsBuffer + i * jointsStride;
+                        float j0 = 0.0f, j1 = 0.0f, j2 = 0.0f, j3 = 0.0f;
+                        switch (jointsAccessor->componentType)
+                        {
+                        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+                        {
+                            const uint8_t* ptr = reinterpret_cast<const uint8_t*>(elem);
+                            j0 = static_cast<float>(ptr[0]);
+                            j1 = static_cast<float>(ptr[1]);
+                            j2 = static_cast<float>(ptr[2]);
+                            j3 = static_cast<float>(ptr[3]);
+                            break;
+                        }
+                        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+                        {
+                            const uint16_t* ptr = reinterpret_cast<const uint16_t*>(elem);
+                            j0 = static_cast<float>(ptr[0]);
+                            j1 = static_cast<float>(ptr[1]);
+                            j2 = static_cast<float>(ptr[2]);
+                            j3 = static_cast<float>(ptr[3]);
+                            break;
+                        }
+                        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+                        {
+                            const uint32_t* ptr = reinterpret_cast<const uint32_t*>(elem);
+                            j0 = static_cast<float>(ptr[0]);
+                            j1 = static_cast<float>(ptr[1]);
+                            j2 = static_cast<float>(ptr[2]);
+                            j3 = static_cast<float>(ptr[3]);
+                            break;
+                        }
+                        }
+                        vertex.Joints = Vector4(j0, j1, j2, j3);
+                    }
+
+                    if (weightsAccessor && weightsBuffer)
+                    {
+                        const unsigned char* elem = weightsBuffer + i * weightsStride;
+                        float w0 = 0.0f, w1 = 0.0f, w2 = 0.0f, w3 = 0.0f;
+                        switch (weightsAccessor->componentType)
+                        {
+                        case TINYGLTF_COMPONENT_TYPE_FLOAT:
+                        {
+                            const float* ptr = reinterpret_cast<const float*>(elem);
+                            w0 = ptr[0]; w1 = ptr[1]; w2 = ptr[2]; w3 = ptr[3];
+                            break;
+                        }
+                        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+                        {
+                            const uint8_t* ptr = reinterpret_cast<const uint8_t*>(elem);
+                            w0 = ptr[0] / 255.0f; w1 = ptr[1] / 255.0f; w2 = ptr[2] / 255.0f; w3 = ptr[3] / 255.0f;
+                            break;
+                        }
+                        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+                        {
+                            const uint16_t* ptr = reinterpret_cast<const uint16_t*>(elem);
+                            w0 = ptr[0] / 65535.0f; w1 = ptr[1] / 65535.0f; w2 = ptr[2] / 65535.0f; w3 = ptr[3] / 65535.0f;
+                            break;
+                        }
+                        }
+                        vertex.Weights = Vector4(w0, w1, w2, w3);
+                    }
 
                     vertices.push_back(vertex);
                 }
@@ -370,6 +461,7 @@ namespace Aion
                         jointNodeIdx < static_cast<int>(gltfModel.nodes.size()))
                     {
                         joint.Name = gltfModel.nodes[jointNodeIdx].name;
+                        joint.NodeIndex = jointNodeIdx;
                         // Find parent index (linear search, DOD-friendly for small joint counts)
                         joint.ParentIndex = -1;
                         for (size_t parentIdx = 0; parentIdx < gltfSkin.joints.size(); ++parentIdx)
@@ -418,8 +510,24 @@ namespace Aion
                 float maxTime = 0.0f;
                 for (const auto& channel : gltfAnim.channels)
                 {
+                    int targetJointIndex = -1;
+                    for (size_t j = 0; j < m_joints.size(); ++j)
+                    {
+                        if (m_joints[j].NodeIndex == channel.target_node)
+                        {
+                            targetJointIndex = static_cast<int>(j);
+                            break;
+                        }
+                    }
+
+                    if (targetJointIndex < 0)
+                    {
+                        continue;
+                    }
+
                     AnimationChannel animChannel;
-                    animChannel.JointIndex = channel.target_node;
+                    animChannel.JointIndex = targetJointIndex;
+                    animChannel.Path = channel.target_path;
                     const auto& sampler = gltfAnim.samplers[channel.sampler];
                     // Input (times)
                     const auto& inputAccessor = gltfModel.accessors[sampler.input];

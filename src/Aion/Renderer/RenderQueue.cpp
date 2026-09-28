@@ -11,9 +11,10 @@ namespace Aion
     }
 
     void RenderQueue::Submit(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material,
-        const glm::mat4& transform, float distanceToCamera)
+        const glm::mat4& transform, float distanceToCamera,
+        const std::vector<Matrix4>& jointMatrices)
     {
-        DrawCommand cmd{std::move(mesh), material, transform, distanceToCamera};
+        DrawCommand cmd{std::move(mesh), material, transform, distanceToCamera, jointMatrices};
 
         if (material && material->State.BlendEnable)
         {

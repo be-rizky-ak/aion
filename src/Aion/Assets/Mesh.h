@@ -8,6 +8,7 @@
 
 #include "Aion/Math/Vector2.h"
 #include "Aion/Math/Vector3.h"
+#include "Aion/Math/Vector4.h"
 
 namespace Aion
 {
@@ -16,6 +17,8 @@ namespace Aion
         Vector3 Position;
         Vector3 Normal;
         Vector2 UV;
+        Vector4 Joints{0.0f};
+        Vector4 Weights{0.0f};
     };
 
     class Mesh

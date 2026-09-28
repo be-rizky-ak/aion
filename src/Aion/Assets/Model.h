@@ -25,19 +25,21 @@ namespace Aion
         std::string Name;
         int ParentIndex = -1;
         Matrix4 InverseBindMatrix = Matrix4::Identity();
+        int NodeIndex = -1;
     };
 
     struct AnimationKeyframe
     {
         float Time = 0.0f;
-        Vector3 Translation;
-        Quaternion Rotation;
-        Vector3 Scale;
+        Vector3 Translation{0.0f};
+        Quaternion Rotation = Quaternion::Identity();
+        Vector3 Scale{1.0f};
     };
 
     struct AnimationChannel
     {
         int JointIndex = -1;
+        std::string Path;
         std::vector<AnimationKeyframe> Keyframes;
     };
 

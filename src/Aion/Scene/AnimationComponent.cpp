@@ -1,11 +1,32 @@
 #include "AnimationComponent.h"
 
+#include <functional>
+
 #include "Aion/Assets/Model.h"
 #include "Aion/Math/Matrix4.h"
+#include "Aion/Scene/MeshRenderer.h"
 #include "Aion/Scene/Object3D.h"
 
 namespace Aion
 {
+    static void UpdateMeshRenderers(Object3D* object, const std::vector<Matrix4>& jointMatrices)
+    {
+        if (!object)
+        {
+            return;
+        }
+
+        if (auto* mr = object->GetComponent<MeshRenderer>())
+        {
+            mr->SetJointMatrices(jointMatrices);
+        }
+
+        for (const auto& child : object->GetChildren())
+        {
+            UpdateMeshRenderers(child.get(), jointMatrices);
+        }
+    }
+
     AnimationComponent::AnimationComponent(std::shared_ptr<Model> model) : m_Model(model)
     {
         if (m_Model && !m_Model->GetAnimations().empty())
@@ -53,7 +74,7 @@ namespace Aion
         const auto& clip = clips[m_ActiveClip];
         m_Time += deltaTime;
 
-        if (m_Time > clip.Duration)
+        if (clip.Duration > 0.0f && m_Time > clip.Duration)
         {
             m_Time = fmodf(m_Time, clip.Duration);
         }
@@ -66,12 +87,13 @@ namespace Aion
 
         m_JointMatrices.resize(joints.size(), Matrix4::Identity());
 
+        std::vector<Matrix4> localTransforms(joints.size(), Matrix4::Identity());
+
         for (size_t jointIndex = 0; jointIndex < joints.size(); ++jointIndex)
         {
-            const auto& joint = joints[jointIndex];
-
-            Matrix4 localTransform = Matrix4::Identity();
-            bool found = false;
+            Vector3 translation(0.0f);
+            Quaternion rotation = Quaternion::Identity();
+            Vector3 scale(1.0f);
 
             for (const auto& channel : clip.Channels)
             {
@@ -80,13 +102,13 @@ namespace Aion
                     continue;
                 }
 
-                AnimationKeyframe prevKeyframe;
-                AnimationKeyframe nextKeyframe;
-
                 if (channel.Keyframes.empty())
                 {
                     continue;
                 }
+
+                AnimationKeyframe prevKeyframe = channel.Keyframes[0];
+                AnimationKeyframe nextKeyframe = channel.Keyframes[0];
 
                 for (size_t k = 0; k < channel.Keyframes.size(); ++k)
                 {
@@ -102,47 +124,62 @@ namespace Aion
                     }
                 }
 
-                if (channel.Keyframes.size() == 1)
+                float t = 0.0f;
+                if (nextKeyframe.Time > prevKeyframe.Time)
                 {
-                    nextKeyframe = channel.Keyframes[0];
-                    prevKeyframe = channel.Keyframes[0];
+                    t = (m_Time - prevKeyframe.Time) / (nextKeyframe.Time - prevKeyframe.Time);
                 }
 
-                if (channel.Keyframes.size() > 1)
+                if (channel.Path == "translation")
                 {
-                    float t = 0.0f;
-                    if (nextKeyframe.Time > prevKeyframe.Time)
-                    {
-                        t = (m_Time - prevKeyframe.Time) / (nextKeyframe.Time - prevKeyframe.Time);
-                    }
-
-                    Vector3 translation = prevKeyframe.Translation +
-                                          (nextKeyframe.Translation - prevKeyframe.Translation) * t;
-                    Quaternion rotation =
-                        Quaternion::Slerp(prevKeyframe.Rotation, nextKeyframe.Rotation, t);
-                    Vector3 scale =
-                        prevKeyframe.Scale + (nextKeyframe.Scale - prevKeyframe.Scale) * t;
-
-                    localTransform = Matrix4::Translate(translation) * Matrix4::Rotate(rotation) *
-                                     Matrix4::Scale(scale);
-                    found = true;
+                    translation = prevKeyframe.Translation +
+                                  (nextKeyframe.Translation - prevKeyframe.Translation) * t;
+                }
+                else if (channel.Path == "rotation")
+                {
+                    rotation = Quaternion::Slerp(prevKeyframe.Rotation, nextKeyframe.Rotation, t);
+                }
+                else if (channel.Path == "scale")
+                {
+                    scale = prevKeyframe.Scale + (nextKeyframe.Scale - prevKeyframe.Scale) * t;
                 }
             }
 
-            if (!found)
+            localTransforms[jointIndex] = Matrix4::Translate(translation) *
+                                           Matrix4::Rotate(rotation) *
+                                           Matrix4::Scale(scale);
+        }
+
+        std::vector<Matrix4> globalTransforms(joints.size(), Matrix4::Identity());
+        std::vector<bool> computed(joints.size(), false);
+
+        std::function<Matrix4(size_t)> getGlobalTransform = [&](size_t idx) -> Matrix4 {
+            if (computed[idx])
             {
-                localTransform = Matrix4::Identity();
+                return globalTransforms[idx];
             }
 
-            Matrix4 global = localTransform;
-
-            if (joint.ParentIndex >= 0 &&
-                joint.ParentIndex < static_cast<int>(m_JointMatrices.size()))
+            Matrix4 parentGlobal = Matrix4::Identity();
+            if (joints[idx].ParentIndex >= 0 &&
+                joints[idx].ParentIndex < static_cast<int>(joints.size()))
             {
-                global = m_JointMatrices[joint.ParentIndex] * localTransform;
+                parentGlobal = getGlobalTransform(joints[idx].ParentIndex);
             }
 
-            m_JointMatrices[jointIndex] = global * joint.InverseBindMatrix;
+            globalTransforms[idx] = parentGlobal * localTransforms[idx];
+            computed[idx] = true;
+            return globalTransforms[idx];
+        };
+
+        for (size_t i = 0; i < joints.size(); ++i)
+        {
+            getGlobalTransform(i);
+            m_JointMatrices[i] = globalTransforms[i] * joints[i].InverseBindMatrix;
+        }
+
+        if (GetOwner())
+        {
+            UpdateMeshRenderers(GetOwner(), m_JointMatrices);
         }
     }
 } // namespace Aion

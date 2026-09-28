@@ -75,7 +75,8 @@ namespace Aion
             float distance = (cameraPos - objectPos).Length();
 
             m_RenderQueue.Submit(
-                meshRenderer->GetMesh(), meshRenderer->GetMaterial(), model, distance);
+                meshRenderer->GetMesh(), meshRenderer->GetMaterial(), model, distance,
+                meshRenderer->GetJointMatrices());
         }
 
         for (const auto& child : object->GetChildren())
@@ -119,6 +120,16 @@ namespace Aion
 
                 shader->Use();
                 shader->SetMat4("u_MVP", mvp);
+
+                if (!cmd.JointMatrices.empty())
+                {
+                    shader->SetInt("u_HasAnimation", 1);
+                    shader->SetMat4Array("u_JointMatrices", cmd.JointMatrices);
+                }
+                else
+                {
+                    shader->SetInt("u_HasAnimation", 0);
+                }
 
                 if (cmd.MaterialPtr)
                 {

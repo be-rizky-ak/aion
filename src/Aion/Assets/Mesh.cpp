@@ -30,6 +30,16 @@ namespace Aion
             2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, UV));
         glEnableVertexAttribArray(2);
 
+        // Joints
+        glVertexAttribPointer(
+            3, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Joints));
+        glEnableVertexAttribArray(3);
+
+        // Weights
+        glVertexAttribPointer(
+            4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Weights));
+        glEnableVertexAttribArray(4);
+
         glBindVertexArray(0);
     }
 

@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 
+#include "Aion/Math/Matrix4.h"
+
 namespace Aion
 {
     class Mesh;
@@ -15,6 +17,7 @@ namespace Aion
         std::shared_ptr<Material> MaterialPtr;
         glm::mat4 Transform;
         float DistanceToCamera;
+        std::vector<Matrix4> JointMatrices;
     };
 
     class RenderQueue
@@ -22,7 +25,8 @@ namespace Aion
     public:
         void Clear();
         void Submit(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material,
-            const glm::mat4& transform, float distanceToCamera);
+            const glm::mat4& transform, float distanceToCamera,
+            const std::vector<Matrix4>& jointMatrices = {});
         void Sort();
 
         const std::vector<DrawCommand>& GetOpaqueQueue() const { return m_OpaqueQueue; }
